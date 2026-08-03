@@ -1,0 +1,83 @@
+/* Google Fonts Import */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: #f8f9fa;
+    color: #2b2d42;
+}
+
+/* Navbar Custom Styling */
+.navbar {
+    background-color: #0f5132 !important; /* Rich Dark Green */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.navbar-brand {
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+/* Card Hover Effects */
+.card {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Custom Buttons */
+.btn-success {
+    background-color: #198754;
+    border: none;
+}
+
+.btn-success:hover {
+    background-color: #146c43;
+    transform: translateY(-1px);
+}
+
+/* Smooth Transitions */
+a, button {
+    transition: all 0.2s ease-in-out;
+}
+
+
+
+/* Hero Carousel Styling */
+.hero-overlay {
+    background: linear-gradient(130deg, rgba(0, 0, 0, 0.75), rgba(15, 81, 50, 0.65));
+    min-height: 480px;
+}
+
+.hero-slide-1 {
+    background: url('https://images.unsplash.com/photo-1556911220-e15b29be8c8f?q=80&w=1600&auto=format&fit=crop') center/cover no-repeat;
+}
+
+.hero-slide-2 {
+    background: url('https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1600&auto=format&fit=crop') center/cover no-repeat;
+}
+
+.hero-slide-3 {
+    background: url('https://images.unsplash.com/photo-1498837167922-ddd27525d352?q=80&w=1600&auto=format&fit=crop') center/cover no-repeat;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+/* Light Green Gradient CTA Banner */
+.cta-banner {
+    background: linear-gradient(135deg, #a8e063 0%, #56ab2f 100%);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+/* Button Custom Hover Effect */
+.custom-btn {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.custom-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2) !important;
+}
