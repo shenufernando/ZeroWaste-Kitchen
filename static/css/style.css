@@ -44,8 +44,6 @@ a, button {
     transition: all 0.2s ease-in-out;
 }
 
-
-
 /* Hero Carousel Styling */
 .hero-overlay {
     background: linear-gradient(130deg, rgba(0, 0, 0, 0.75), rgba(15, 81, 50, 0.65));
@@ -80,4 +78,93 @@ html {
 .custom-btn:hover {
     transform: translateY(-3px);
     box-shadow: 0 10px 20px rgba(0,0,0,0.2) !important;
+}
+/* ==========================================
+   Dashboard & Inventory Custom Styles
+   ========================================== */
+
+/* Summary Card Widgets */
+.card.border-start.border-4 {
+    border-top: none !important;
+    border-right: none !important;
+    border-bottom: none !important;
+    border-radius: 12px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card.border-start.border-4:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Pantry Table Styling */
+.table {
+    vertical-align: middle;
+}
+
+.table thead th {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6c757d;
+    border-bottom: 2px solid #edf2f7;
+    padding: 1rem;
+}
+
+.table tbody td {
+    padding: 1rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(25, 135, 84, 0.03); /* Subtle green hover */
+}
+
+/* Status Badges */
+.badge {
+    font-weight: 600;
+    padding: 0.45em 0.75em;
+    border-radius: 6px;
+}
+
+.badge.bg-light {
+    background-color: #f8f9fa !important;
+    color: #495057 !important;
+}
+
+/* Action Buttons */
+.btn-outline-danger {
+    border-color: #f8d7da;
+    color: #dc3545;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.btn-outline-danger:hover {
+    background-color: #dc3545;
+    color: #ffffff;
+    border-color: #dc3545;
+}
+
+/* Modal Custom Styling */
+.modal-content {
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.modal-header {
+    padding: 1.25rem 1.5rem;
+}
+
+.modal-body {
+    background-color: #ffffff;
+}
+
+.modal-footer {
+    padding: 1rem 1.5rem;
 }

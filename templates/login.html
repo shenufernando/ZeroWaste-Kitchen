@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-lg border-0 rounded-3">
+                <div class="card-body p-4 p-sm-5">
+                    <h2 class="text-center fw-bold mb-4 text-success">Welcome Back</h2>
+                    <p class="text-muted text-center mb-4">Login to your ZeroWaste Kitchen account</p>
+
+                    <form action="{{ url_for('login') }}" method="POST">
+                        <!-- Email -->
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com" required>
+                        </div>
+
+                        <!-- Password -->
+                        <div class="mb-4">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" placeholder="••••••••" required>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn btn-success w-100 btn-lg shadow-sm">Login</button>
+                    </form>
+
+                    <hr class="my-4">
+
+                    <p class="text-center mb-0">Don't have an account? 
+                        <a href="{{ url_for('register') }}" class="text-success fw-bold text-decoration-none">Register here</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
