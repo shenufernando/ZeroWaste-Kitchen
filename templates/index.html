@@ -15,7 +15,7 @@
             <div class="hero-overlay d-flex align-items-center justify-content-center text-center p-5">
                 <div class="text-white py-5 px-3" style="max-width: 800px;">
                     <h1 class="display-4 fw-bold mb-3">Welcome to ZeroWaste Kitchen 🌿</h1>
-                    <p class="lead fs-4 opacity-90 mb-4">Track your pantry, reduce food waste, and get AI-generated recipes from ingredients you already have!</p>
+                    <p class="lead fs-4 opacity-90 mb-4">Track your pantry, reduce food waste, and get personalized AI recipes tailored to your health goals!</p>
                     <div class="d-flex justify-content-center gap-3">
                         <a href="{{ url_for('register') }}" class="btn btn-success btn-lg px-4 py-2 rounded-pill fw-bold shadow">Get Started (Free)</a>
                         <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg px-4 py-2 rounded-pill fw-semibold">Login</a>
@@ -41,8 +41,8 @@
         <div class="carousel-item hero-slide-3">
             <div class="hero-overlay d-flex align-items-center justify-content-center text-center p-5">
                 <div class="text-white py-5 px-3" style="max-width: 800px;">
-                    <h1 class="display-4 fw-bold mb-3">AI-Powered Recipe Magic 🤖</h1>
-                    <p class="lead fs-4 opacity-90 mb-4">Turn leftovers into gourmet meals with a single click. Save money while eating delicious food.</p>
+                    <h1 class="display-4 fw-bold mb-3">AI & Health-Aware Recipes 🤖🥗</h1>
+                    <p class="lead fs-4 opacity-90 mb-4">Generate custom recipes based on leftovers, calorie limits, sugar levels, and dietary goals!</p>
                     <div class="d-flex justify-content-center gap-3">
                         <a href="{{ url_for('register') }}" class="btn btn-success btn-lg px-4 py-2 rounded-pill fw-bold shadow">Try AI Recipes</a>
                     </div>
@@ -62,25 +62,32 @@
 
 <!-- Features Section -->
 <div id="features" class="row g-4 mb-5 pt-3">
-    <div class="col-md-4">
+    <div class="col-md-3">
         <div class="card h-100 border-0 shadow-sm text-center p-4 rounded-4">
             <div class="fs-1 text-success mb-3">📦</div>
             <h4 class="fw-bold mb-2">Pantry Tracker</h4>
-            <p class="text-muted">Keep an organized record of all your grocery items, quantities, and expiration dates in one single place.</p>
+            <p class="text-muted">Organize grocery items, quantities, and expiration dates seamlessly in one dashboard.</p>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-3">
         <div class="card h-100 border-0 shadow-sm text-center p-4 rounded-4">
             <div class="fs-1 text-warning mb-3">⏳</div>
             <h4 class="fw-bold mb-2">Expiry Alerts</h4>
-            <p class="text-muted">Never let food spoil again. Get clear visibility on items that are expiring soon so you can use them in time.</p>
+            <p class="text-muted">Get timely visual warnings for items expiring soon to eliminate kitchen waste.</p>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-3">
         <div class="card h-100 border-0 shadow-sm text-center p-4 rounded-4">
-            <div class="fs-1 text-success mb-3">🤖</div>
-            <h4 class="fw-bold mb-2">AI Recipe Ideas</h4>
-            <p class="text-muted">Turn leftovers into delicious meals! Generate unique recipes based on ingredients you already have.</p>
+            <div class="fs-1 text-danger mb-3">🥗</div>
+            <h4 class="fw-bold mb-2">Health-Aware AI</h4>
+            <p class="text-muted">Generate personalized meals based on calorie limits, sugar controls, and weight goals.</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100 border-0 shadow-sm text-center p-4 rounded-4">
+            <div class="fs-1 text-info mb-3">📊</div>
+            <h4 class="fw-bold mb-2">Nutrition Charts</h4>
+            <p class="text-muted">Visualize calories, protein, and carbs for every recipe using interactive graphs.</p>
         </div>
     </div>
 </div>
@@ -89,20 +96,25 @@
 <div id="how-it-works" class="card border-0 shadow-sm p-5 mb-5 rounded-4 bg-light pt-4">
     <h2 class="text-center fw-bold mb-4 text-dark">How It Works 🚀</h2>
     <div class="row text-center g-4">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="bg-white p-3 rounded-circle d-inline-block mb-3 shadow-sm text-success fw-bold fs-4" style="width: 60px; height: 60px; line-height: 30px;">1</div>
             <h5 class="fw-bold">Add Ingredients</h5>
-            <p class="text-muted small">Input groceries when you shop or update your existing kitchen pantry.</p>
+            <p class="text-muted small">Snap a fridge photo or manually log items into your inventory.</p>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="bg-white p-3 rounded-circle d-inline-block mb-3 shadow-sm text-success fw-bold fs-4" style="width: 60px; height: 60px; line-height: 30px;">2</div>
-            <h5 class="fw-bold">Monitor Expiry</h5>
-            <p class="text-muted small">Check color-coded statuses (Fresh, Expiring Soon, Expired) at a glance.</p>
+            <h5 class="fw-bold">Set Health Goals</h5>
+            <p class="text-muted small">Input target calories, meal type (Breakfast/Dinner), or health restrictions.</p>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="bg-white p-3 rounded-circle d-inline-block mb-3 shadow-sm text-success fw-bold fs-4" style="width: 60px; height: 60px; line-height: 30px;">3</div>
-            <h5 class="fw-bold">Cook & Save</h5>
-            <p class="text-muted small">Cook smart meals before items spoil and save money on unnecessary groceries.</p>
+            <h5 class="fw-bold">Get AI Recipes</h5>
+            <p class="text-muted small">Get 3 smart recipes curated directly from your available ingredients.</p>
+        </div>
+        <div class="col-md-3">
+            <div class="bg-white p-3 rounded-circle d-inline-block mb-3 shadow-sm text-success fw-bold fs-4" style="width: 60px; height: 60px; line-height: 30px;">4</div>
+            <h5 class="fw-bold">Track Nutrition</h5>
+            <p class="text-muted small">View nutritional graphs, cook zero-waste meals, and save money!</p>
         </div>
     </div>
 </div>
@@ -114,12 +126,12 @@
     </div>
     <div class="col-lg-6 ps-lg-5">
         <span class="badge bg-success-subtle text-success fw-bold px-3 py-2 rounded-pill mb-3">OUR MISSION</span>
-        <h2 class="display-6 fw-bold mb-3 text-dark">Smart Cooking, Zero Waste, Happy Planet 🌍</h2>
+        <h2 class="display-6 fw-bold mb-3 text-dark">Smart Cooking, Zero Waste, Healthy Life 🌍</h2>
         <p class="text-secondary lead fs-6 mb-4">
-            At <strong>ZeroWaste Kitchen</strong>, we believe every meal matters. Millions of tons of edible food go to waste each year simply because it gets forgotten in the back of the fridge.
+            At <strong>ZeroWaste Kitchen</strong>, we combine sustainability with personalized nutrition. Don't just save leftover ingredients—turn them into meals that align with your personal health goals.
         </p>
         <p class="text-muted mb-4">
-            Our platform helps smart households manage their grocery inventory effortlessly, receive timely expiration warnings, and discover creative recipes generated by AI to turn leftover ingredients into culinary masterpieces.
+            Our platform helps households manage pantry inventory, receive expiry alerts, and harness AI to generate healthy recipes complete with macro-nutrient tracking.
         </p>
         
         <!-- Key Highlights -->
@@ -127,13 +139,13 @@
             <div class="col-4">
                 <div class="p-3 bg-white rounded-3 shadow-sm border">
                     <h3 class="fw-bold text-success mb-0">100%</h3>
-                    <small class="text-muted">Free to Use</small>
+                    <small class="text-muted">Smart Tracking</small>
                 </div>
             </div>
             <div class="col-4">
                 <div class="p-3 bg-white rounded-3 shadow-sm border">
                     <h3 class="fw-bold text-success mb-0">AI</h3>
-                    <small class="text-muted">Recipes</small>
+                    <small class="text-muted">Health Recipes</small>
                 </div>
             </div>
             <div class="col-4">
@@ -151,8 +163,8 @@
      style="background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1200&auto=format&fit=crop') center/cover no-repeat;">
     <div class="row align-items-center py-4">
         <div class="col-md-8">
-            <h2 class="display-6 fw-bold mb-2">Ready to Start Reducing Waste? 🌿</h2>
-            <p class="fs-5 opacity-90 mb-0">Join ZeroWaste Kitchen today and take control of your kitchen!</p>
+            <h2 class="display-6 fw-bold mb-2">Ready to Eat Healthy & Reduce Waste? 🌿</h2>
+            <p class="fs-5 opacity-90 mb-0">Join ZeroWaste Kitchen today and transform your cooking!</p>
         </div>
         <div class="col-md-4 text-md-end mt-4 mt-md-0">
             <a href="{{ url_for('register') }}" class="btn btn-light text-success btn-lg px-4 rounded-pill fw-bold shadow">Create Free Account</a>
