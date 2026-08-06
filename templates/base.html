@@ -40,10 +40,10 @@
 <body class="bg-light d-flex flex-column min-vh-100">
 
     <!-- Modern & Dynamic Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-success shadow-sm sticky-top py-3">
-        <div class="container">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success shadow-sm sticky-top py-2">
+        <div class="container-fluid px-lg-5">
             <!-- Logo / Brand -->
-            <a class="navbar-brand d-flex align-items-center gap-2 fw-bold fs-4 me-lg-5" href="{{ url_for('home') }}">
+            <a class="navbar-brand d-flex align-items-center gap-2 fw-bold fs-4 me-lg-4" href="{{ url_for('home') }}">
                 <span>🍃</span> ZeroWaste Kitchen
             </a>
 
@@ -55,29 +55,82 @@
             <!-- Navbar Items -->
             <div class="collapse navbar-collapse" id="navbarNav">
                 {% if current_user.is_authenticated %}
-                    <!-- User Logged In: Dynamic App Navigation -->
-                    <ul class="navbar-nav mx-auto gap-lg-3 my-2 my-lg-0">
+                    <!-- User Logged In: Fully Featured Main Navigation Links -->
+                    <ul class="navbar-nav me-auto gap-lg-1 my-2 my-lg-0 align-items-lg-center">
                         <li class="nav-item">
-                            <a class="nav-link text-white fw-semibold px-3 hover-white active" href="{{ url_for('home') }}">
-                                <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                            <a class="nav-link text-white fw-semibold px-3 d-flex align-items-center gap-2 active" href="{{ url_for('home') }}">
+                                <i class="bi bi-speedometer2"></i> Dashboard
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white opacity-75 fw-semibold px-3 d-flex align-items-center gap-2 hover-white" href="#">
+                                <i class="bi bi-basket"></i> My Pantry
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white opacity-75 fw-semibold px-3 d-flex align-items-center gap-2 hover-white" href="#">
+                                <i class="bi bi-magic"></i> AI Recipes
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white opacity-75 fw-semibold px-3 d-flex align-items-center gap-2 hover-white" href="#">
+                                <i class="bi bi-cart-check"></i> Shopping List
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white opacity-75 fw-semibold px-3 d-flex align-items-center gap-2 hover-white" href="#">
+                                <i class="bi bi-pie-chart"></i> Analytics
+                            </a>
+                        </li>
+                    </ul>
 
+                    <!-- User Right Side Menu: Notifications & Profile -->
+                    <div class="d-flex align-items-center gap-3 ms-auto">
                         
-                    </ul>
-
-                    <ul class="navbar-nav ms-auto align-items-lg-center gap-2">
-                        <li class="nav-item">
-                            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-semibold">
-                                Plan: {{ current_user.plan_type }}
-                            </span>
-                        </li>
-                        <li class="nav-item ms-lg-2">
-                            <a class="btn btn-outline-light btn-sm px-3 rounded-pill" href="{{ url_for('logout') }}">
-                                Logout
+                        <!-- Notification Bell Dropdown -->
+                        <div class="dropdown">
+                            <a href="#" class="text-white position-relative fs-5 px-2 text-decoration-none d-flex align-items-center" role="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-bell-fill"></i>
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-circle bg-danger fs-7 p-1">
+                                    2
+                                </span>
                             </a>
-                        </li>
-                    </ul>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2 p-2" style="min-width: 240px;">
+                                <li class="dropdown-header fw-bold text-dark">Notifications</li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item small rounded py-2" href="#">⚠️ Milk expires tomorrow!</a></li>
+                                <li><a class="dropdown-item small rounded py-2" href="#">🍞 Bread expires in 2 days</a></li>
+                            </ul>
+                        </div>
+
+                        <!-- User Profile Dropdown -->
+                        <div class="dropdown">
+                            <a class="nav-link text-white dropdown-toggle fw-semibold d-flex align-items-center gap-2 py-1 px-3 rounded-pill bg-white bg-opacity-10" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-person-circle fs-5"></i>
+                                <span>{{ current_user.name }}</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2">
+                                <li class="px-3 py-2 border-bottom d-flex justify-content-between align-items-center gap-3">
+                                    <span class="small text-muted">Account Plan</span>
+                                    <span class="badge bg-warning text-dark fw-bold rounded-pill">
+                                        {{ current_user.plan_type }}
+                                    </span>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2 d-flex align-items-center gap-2" href="#">
+                                        <i class="bi bi-gear text-secondary"></i> Settings
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item py-2 text-danger d-flex align-items-center gap-2" href="{{ url_for('logout') }}">
+                                        <i class="bi bi-box-arrow-right"></i> Logout
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+
+                    </div>
                 {% else %}
                     <!-- Guest User: Landing Page Navigation -->
                     <ul class="navbar-nav mx-auto gap-lg-3 my-2 my-lg-0">
@@ -123,7 +176,7 @@
     </div>
 
     <!-- Main Content Area -->
-    <main class="container my-4 flex-grow-1">
+    <main class="container-fluid px-lg-5 my-4 flex-grow-1">
         {% block content %}{% endblock %}
     </main>
 
@@ -131,7 +184,7 @@
     {% if current_user.is_authenticated %}
         <!-- Compact Minimal Footer for Logged-In App Users -->
         <footer class="py-3 bg-white border-top mt-auto text-center text-muted small">
-            <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+            <div class="container-fluid px-lg-5 d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
                 <div>
                     &copy; 2026 ZeroWaste Kitchen. All rights reserved.
                 </div>
