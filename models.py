@@ -23,12 +23,12 @@ class PantryItem(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    name = db.Column(db.String(100), nullable=False) # item_name වෙනුවට name ලෙස වෙනස් කරන ලදී
+    name = db.Column(db.String(100), nullable=False) # item_name was changed to name
     category = db.Column(db.String(50), default='General')
-    quantity = db.Column(db.Float, default=1.0) # app.py එකට ගැලපෙන සේ Float කළා
-    unit = db.Column(db.String(20), nullable=True) # unit column එක එකතු කරන ලදී
+    quantity = db.Column(db.Float, default=1.0) # Floated to fit app.py
+    unit = db.Column(db.String(20), nullable=True) # unit column added
     added_date = db.Column(db.Date, default=datetime.utcnow().date)
-    expiration_date = db.Column(db.Date, nullable=False) # expiry_date වෙනුවට expiration_date ලෙස වෙනස් කරන ලදී
+    expiration_date = db.Column(db.Date, nullable=False) # Expiry_date replaced with expiration_date
     status = db.Column(db.String(20), default='Fresh')
 
 class Recipe(db.Model):

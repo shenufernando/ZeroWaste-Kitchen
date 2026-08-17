@@ -87,21 +87,32 @@
                     <!-- User Right Side Menu: Notifications & Profile -->
                     <div class="d-flex align-items-center gap-3 ms-auto">
                         
-                        <!-- Notification Bell Dropdown -->
-                        <div class="dropdown">
-                            <a href="#" class="text-white position-relative fs-5 px-2 text-decoration-none d-flex align-items-center" role="button" data-bs-toggle="dropdown">
-                                <i class="bi bi-bell-fill"></i>
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-circle bg-danger fs-7 p-1">
-                                    2
-                                </span>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2 p-2" style="min-width: 240px;">
-                                <li class="dropdown-header fw-bold text-dark">Notifications</li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item small rounded py-2" href="#">⚠️ Milk expires tomorrow!</a></li>
-                                <li><a class="dropdown-item small rounded py-2" href="#">🍞 Bread expires in 2 days</a></li>
-                            </ul>
-                        </div>
+                        <!-- Notification Dropdown -->
+<div class="dropdown me-3">
+    <button class="btn btn-link text-white position-relative p-0" type="button" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-bell fs-4"></i>
+        {% if notifications and notifications|length > 0 %}
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                {{ notifications|length }}
+            </span>
+        {% endif %}
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3 mt-2" aria-labelledby="notificationDropdown" style="width: 280px; max-height: 300px; overflow-y: auto;">
+        <li class="dropdown-header fw-bold text-dark border-bottom pb-2">Notifications</li>
+        
+        {% if notifications and notifications|length > 0 %}
+            {% for note in notifications %}
+                <li class="dropdown-item small text-wrap py-2 border-bottom">
+                    {{ note }}
+                </li>
+            {% endfor %}
+        {% else %}
+            <li class="dropdown-item small text-muted text-center py-3">
+                No new notifications
+            </li>
+        {% endif %}
+    </ul>
+</div>
 
                         <!-- User Profile Dropdown -->
                         <div class="dropdown">

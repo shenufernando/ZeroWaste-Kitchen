@@ -1,13 +1,17 @@
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning)
+
 from datetime import datetime
 import os
 import json
+import io
+from PIL import Image
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from config import Config
 from models import db, User, PantryItem, Recipe, SavedRecipe
 
-# .env file 
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
@@ -17,7 +21,6 @@ load_dotenv()
 app = Flask(__name__)
 app.config.from_object(Config)
 
-# Extensions setup
 db.init_app(app)
 bcrypt = Bcrypt(app)
 
@@ -25,7 +28,7 @@ login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 login_manager.login_message_category = 'info'
 
-# Gemini Client 
+# New Client Setup
 ai_client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 @login_manager.user_loader
@@ -34,7 +37,6 @@ def load_user(user_id):
 
 # ================= ROUTES =================
 
-# Home / Dashboard Route
 @app.route('/')
 @app.route('/dashboard')
 def home():
@@ -42,18 +44,37 @@ def home():
         return render_template('index.html')
     
     items = PantryItem.query.filter_by(user_id=current_user.id).order_by(PantryItem.expiration_date.asc()).all()
-    
     today = datetime.now().date()
-    expiring_soon_count = sum(1 for item in items if 0 <= (item.expiration_date - today).days <= 3)
-    expired_count = sum(1 for item in items if (item.expiration_date - today).days < 0)
+    
+    # Expiry ළඟ items සහ Expired items වෙන වෙනම filter කරගැනීම
+    expiring_soon_items = [item for item in items if item.expiration_date and 0 <= (item.expiration_date - today).days <= 3]
+    expired_items = [item for item in items if item.expiration_date and (item.expiration_date - today).days < 0]
+    
+    expiring_soon_count = len(expiring_soon_items)
+    expired_count = len(expired_items)
+    
+    # Notifications List එක dynamic ලෙස සෑදීම
+    notifications = []
+    for item in expiring_soon_items:
+        days_left = (item.expiration_date - today).days
+        if days_left == 0:
+            msg = f"⚠️ {item.name} expires today!"
+        elif days_left == 1:
+            msg = f"⚠️ {item.name} expires tomorrow!"
+        else:
+            msg = f"📦 {item.name} expires in {days_left} days"
+        notifications.append(msg)
+        
+    for item in expired_items:
+        notifications.append(f"❌ {item.name} has expired!")
     
     return render_template('dashboard.html', 
                            items=items, 
                            today=today, 
                            expiring_soon_count=expiring_soon_count, 
-                           expired_count=expired_count)
+                           expired_count=expired_count,
+                           notifications=notifications)
 
-# Register Route
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
@@ -81,7 +102,6 @@ def register():
 
     return render_template('register.html')
 
-# Login Route
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
@@ -101,7 +121,6 @@ def login():
 
     return render_template('login.html')
 
-# Logout Route
 @app.route('/logout')
 @login_required
 def logout():
@@ -109,9 +128,6 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('home'))
 
-# ================= PANTRY MANAGEMENT ROUTES =================
-
-# Add Pantry Item
 @app.route('/pantry/add', methods=['POST'])
 @login_required
 def add_pantry_item():
@@ -139,7 +155,6 @@ def add_pantry_item():
 
     return redirect(url_for('home'))
 
-# Delete Pantry Item
 @app.route('/pantry/delete/<int:item_id>', methods=['POST'])
 @login_required
 def delete_pantry_item(item_id):
@@ -150,7 +165,40 @@ def delete_pantry_item(item_id):
         flash('Item removed from pantry.', 'info')
     return redirect(url_for('home'))
 
-# Scan Pantry Item Image Route (AI Image Recognition)
+@app.route('/pantry/edit/<int:item_id>', methods=['POST'])
+@login_required
+def edit_pantry_item(item_id):
+    item = PantryItem.query.get_or_404(item_id)
+    if item.user_id == current_user.id:
+        item.name = request.form.get('name')
+        item.category = request.form.get('category')
+        item.quantity = float(request.form.get('quantity')) if request.form.get('quantity') else item.quantity
+        item.unit = request.form.get('unit')
+        
+        exp_date_str = request.form.get('expiration_date')
+        if exp_date_str:
+            item.expiration_date = datetime.strptime(exp_date_str, '%Y-%m-%d').date()
+            
+        db.session.commit()
+        flash('Item updated successfully!', 'success')
+    return redirect(url_for('home'))
+
+@app.route('/pantry/item/<int:item_id>', methods=['GET'])
+@login_required
+def get_pantry_item(item_id):
+    item = PantryItem.query.get_or_404(item_id)
+    if item.user_id == current_user.id:
+        return jsonify({
+            'id': item.id,
+            'name': item.name,
+            'category': item.category,
+            'quantity': item.quantity,
+            'unit': item.unit,
+            'expiration_date': item.expiration_date.strftime('%Y-%m-%d') if item.expiration_date else ''
+        })
+    return jsonify({'error': 'Unauthorized'}), 403
+
+# Updated Gemini 3.5 API Vision Route
 @app.route('/pantry/scan', methods=['POST'])
 @login_required
 def scan_pantry_item():
@@ -162,35 +210,43 @@ def scan_pantry_item():
         return jsonify({'error': 'No image selected'}), 400
 
     try:
-        image_bytes = image_file.read()
-        mime_type = image_file.content_type or 'image/jpeg'
+        raw_image = Image.open(image_file.stream)
+        if raw_image.mode != 'RGB':
+            raw_image = raw_image.convert('RGB')
+
+        img_byte_arr = io.BytesIO()
+        raw_image.save(img_byte_arr, format='JPEG')
+        clean_image_bytes = img_byte_arr.getvalue()
 
         prompt = """
         Analyze this food/grocery item image and extract details. 
         Return ONLY a JSON object with this exact format:
         {
             "name": "Item Name",
-            "category": "Produce" or "Dairy" or "Meat" or "Pantry" or "Bakery" or "Beverages" or "Other",
-            "unit": "pcs" or "kg" or "g" or "l" or "ml" or "pack"
+            "category": "Produce",
+            "unit": "pcs"
         }
+        Valid categories: Produce, Dairy, Meat, Pantry, Bakery, Beverages, Other
+        Valid units: pcs, kg, g, l, ml, pack
         """
 
         response = ai_client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-3.5-flash',
             contents=[
-                types.Part.from_bytes(data=image_bytes, mime_type=mime_type),
+                types.Part.from_bytes(data=clean_image_bytes, mime_type='image/jpeg'),
                 prompt
-            ]
+            ],
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json"
+            )
         )
 
-        clean_text = response.text.replace('```json', '').replace('```', '').strip()
-        data = json.loads(clean_text)
+        data = json.loads(response.text.strip())
         return jsonify(data)
 
     except Exception as e:
+        print("AI Scan Error Details:", str(e))
         return jsonify({'error': str(e)}), 500
-
-# ================= APP RUNNER =================
 
 if __name__ == '__main__':
     with app.app_context():
