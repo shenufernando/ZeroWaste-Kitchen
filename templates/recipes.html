@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+{% block title %}AI Recipes - ZeroWaste Kitchen{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        background: linear-gradient(rgba(240, 242, 245, 0.75), rgba(240, 242, 245, 0.75)), 
+                    url('https://images.unsplash.com/photo-1556911220-e15b29be8c8f?q=80&w=2070') no-repeat center center fixed !important;
+        background-size: cover !important;
+    }
+
+    .card, .modal-content {
+        background: rgba(255, 255, 255, 0.90) !important;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.6) !important;
+    }
+
+    .ingredient-checkbox:checked + .btn-outline-success {
+        background-color: #198754 !important;
+        color: white !important;
+    }
+</style>
+
+<div class="container py-4">
+    <!-- Header -->
+    <div class="text-center mb-4">
+        <h2 class="fw-bold text-success mb-1"><i class="bi bi-magic me-2"></i>AI Recipe Generator</h2>
+        <p class="text-muted">Select ingredients from your pantry to generate smart, zero-waste recipes.</p>
+    </div>
+
+    <div class="row g-4">
+        <!-- Left Side: Pantry Selection & Filters -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                <h5 class="fw-bold text-dark mb-3"><i class="bi bi-basket me-2 text-success"></i>Available Pantry Items</h5>
+                <p class="small text-muted mb-3">Select the items you want to cook with:</p>
+
+                <div class="d-flex flex-wrap gap-2 mb-4" style="max-height: 250px; overflow-y: auto;">
+                    {% for item in items %}
+                        {% set days_left = (item.expiration_date - today).days %}
+                        <input type="checkbox" class="btn-check ingredient-checkbox" id="item-{{ item.id }}" value="{{ item.name }}" autocomplete="off" {% if days_left <= 3 %}checked{% endif %}>
+                        <label class="btn btn-sm btn-outline-success rounded-pill px-3 py-2 d-flex align-items-center gap-1" for="item-{{ item.id }}">
+                            {{ item.name }}
+                            {% if days_left <= 3 %}
+                                <span class="badge bg-warning text-dark ms-1" style="font-size: 0.65rem;">Expiring Soon</span>
+                            {% endif %}
+                        </label>
+                    {% else %}
+                        <p class="text-muted small">No items found in your pantry. Add items first!</p>
+                    {% endfor %}
+                </div>
+
+                <!-- Filters -->
+                <h6 class="fw-bold text-dark mb-2">Filters</h6>
+                <div class="row g-2 mb-4">
+                    <div class="col-6">
+                        <label class="form-label small text-muted">Meal Type</label>
+                        <select id="mealType" class="form-select form-select-sm rounded-3">
+                            <option value="Any">Any Type</option>
+                            <option value="Breakfast">Breakfast</option>
+                            <option value="Lunch">Lunch</option>
+                            <option value="Dinner">Dinner</option>
+                            <option value="Snack">Snack</option>
+                        </select>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small text-muted">Max Prep Time</label>
+                        <select id="maxTime" class="form-select form-select-sm rounded-3">
+                            <option value="15">Under 15 Mins</option>
+                            <option value="30" selected>Under 30 Mins</option>
+                            <option value="60">Under 60 Mins</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Generate Button -->
+                <button id="generateBtn" class="btn btn-success rounded-pill w-100 py-2 fw-semibold shadow-sm">
+                    <i class="bi bi-stars me-1"></i> Generate AI Recipes
+                </button>
+            </div>
+        </div>
+
+        <!-- Right Side: Recipe Results -->
+        <div class="col-lg-7">
+            <!-- Loading Spinner -->
+            <div id="loadingState" class="text-center py-5 d-none">
+                <div class="spinner-border text-success mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+                <h5 class="fw-semibold text-dark">Chef AI is cooking up recipes...</h5>
+                <p class="text-muted small">Matching your pantry ingredients to minimize waste.</p>
+            </div>
+
+            <!-- Empty Initial State -->
+            <div id="emptyState" class="card border-0 shadow-sm rounded-4 p-5 text-center">
+                <i class="bi bi-journal-richtext fs-1 text-muted mb-2"></i>
+                <h5 class="fw-bold text-secondary">No Recipes Generated Yet</h5>
+                <p class="text-muted small mb-0">Select your pantry ingredients on the left and click "Generate AI Recipes" to start.</p>
+            </div>
+
+            <!-- Results Container -->
+            <div id="recipesContainer" class="d-flex flex-column gap-3 d-none"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('generateBtn').addEventListener('click', function() {
+    const checkboxes = document.querySelectorAll('.ingredient-checkbox:checked');
+    const selectedIngredients = Array.from(checkboxes).map(cb => cb.value);
+
+    if (selectedIngredients.length === 0) {
+        alert('Please select at least one ingredient from your pantry!');
+        return;
+    }
+
+    const mealType = document.getElementById('mealType').value;
+    const maxTime = document.getElementById('maxTime').value;
+
+    // UI Updates
+    document.getElementById('emptyState').classList.add('d-none');
+    document.getElementById('recipesContainer').classList.add('d-none');
+    document.getElementById('loadingState').classList.remove('d-none');
+
+    // Fetch API
+    fetch('/generate-recipes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            ingredients: selectedIngredients,
+            meal_type: mealType,
+            max_time: maxTime
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById('loadingState').classList.add('d-none');
+        
+        if (data.error) {
+            alert(data.error);
+            document.getElementById('emptyState').classList.remove('d-none');
+            return;
+        }
+
+        const container = document.getElementById('recipesContainer');
+        container.innerHTML = '';
+
+        data.recipes.forEach(recipe => {
+            const card = document.createElement('div');
+            card.className = 'card border-0 shadow-sm rounded-4 p-4';
+            
+            let usedBadgeHtml = recipe.used_ingredients.map(ing => `<span class="badge bg-success-subtle text-success border border-success me-1"><i class="bi bi-check-circle me-1"></i>${ing}</span>`).join('');
+            let missingBadgeHtml = recipe.missing_ingredients.map(ing => `<span class="badge bg-light text-dark border me-1"><i class="bi bi-plus-circle me-1"></i>${ing}</span>`).join('');
+            let stepsHtml = recipe.instructions.map((step, index) => `<li class="mb-2"><small><strong>Step ${index + 1}:</strong> ${step}</small></li>`).join('');
+
+            card.innerHTML = `
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="fw-bold text-dark mb-0">${recipe.title}</h5>
+                    <span class="badge bg-success rounded-pill px-3 py-2"><i class="bi bi-lightning-charge me-1"></i>${recipe.match_score} Match</span>
+                </div>
+                <div class="text-muted small mb-3">
+                    <i class="bi bi-clock me-1"></i> ${recipe.time}
+                </div>
+
+                <div class="mb-3">
+                    <div class="small fw-semibold mb-1 text-secondary">Ingredients Used from Pantry:</div>
+                    <div>${usedBadgeHtml || '<span class="small text-muted">None</span>'}</div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="small fw-semibold mb-1 text-secondary">Extra Ingredients Needed:</div>
+                    <div>${missingBadgeHtml || '<span class="small text-muted">None</span>'}</div>
+                </div>
+
+                <hr class="my-3 opacity-25">
+
+                <div>
+                    <div class="small fw-semibold mb-2 text-dark"><i class="bi bi-list-ol me-1 text-success"></i>Cooking Instructions:</div>
+                    <ol class="ps-3 mb-0">${stepsHtml}</ol>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+
+        container.classList.remove('d-none');
+    })
+    .catch(err => {
+        document.getElementById('loadingState').classList.add('d-none');
+        document.getElementById('emptyState').classList.remove('d-none');
+        alert('Something went wrong while generating recipes.');
+    });
+});
+</script>
+{% endblock %}

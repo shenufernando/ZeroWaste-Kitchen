@@ -81,6 +81,66 @@ def pantry():
     today = datetime.now().date()
     return render_template('pantry.html', items=items, today=today)
 
+@app.route('/recipes')
+@login_required
+def recipes():
+    items = PantryItem.query.filter_by(user_id=current_user.id).order_by(PantryItem.expiration_date.asc()).all()
+    today = datetime.now().date()
+    return render_template('recipes.html', items=items, today=today)
+
+@app.route('/generate-recipes', methods=['POST'])
+@login_required
+def generate_recipes():
+    data = request.get_json()
+    selected_ingredients = data.get('ingredients', [])
+    meal_type = data.get('meal_type', 'Any')
+    max_time = data.get('max_time', '30')
+
+    if not selected_ingredients:
+        return jsonify({'error': 'Please select at least one ingredient!'}), 400
+
+    prompt = f"""
+    Act as a Zero-Waste Professional Chef. 
+    Generate 2 creative, delicious recipes using these primary ingredients from the user's pantry: {', '.join(selected_ingredients)}.
+    
+    Filters:
+    - Meal Type: {meal_type}
+    - Max Prep/Cook Time: {max_time} minutes
+    
+    Return ONLY a JSON object containing an array of recipes with this exact structure:
+    {{
+      "recipes": [
+        {{
+          "id": 1,
+          "title": "Recipe Name",
+          "time": "15 mins",
+          "match_score": "95%",
+          "used_ingredients": ["Ingredient 1 from pantry", "Ingredient 2 from pantry"],
+          "missing_ingredients": ["Basic Pantry Staple 1", "Staple 2"],
+          "instructions": [
+            "Step 1 instruction",
+            "Step 2 instruction"
+          ]
+        }}
+      ]
+    }}
+    Ensure the recipes prioritize zero-waste and efficient use of the provided ingredients.
+    """
+
+    try:
+        response = ai_client.models.generate_content(
+            model='gemini-3.5-flash',
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json"
+            )
+        )
+        recipes_json = json.loads(response.text.strip())
+        return jsonify(recipes_json)
+
+    except Exception as e:
+        return jsonify({'error': f'AI Generation failed: {str(e)}'}), 500
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
