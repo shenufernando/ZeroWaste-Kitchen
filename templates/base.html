@@ -18,18 +18,16 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     
     <style>
-        /* Smooth Scrolling for Anchor Links */
         html {
             scroll-behavior: smooth;
         }
-        /* Custom Styling */
         .hover-white:hover {
             color: #ffffff !important;
             transition: color 0.2s ease-in-out;
         }
         .social-icon:hover {
             opacity: 1 !important;
-            color: #198754 !important; /* Success Green on hover */
+            color: #198754 !important;
             transition: all 0.2s ease-in-out;
         }
         .fs-7 {
@@ -39,31 +37,27 @@
 </head>
 <body class="bg-light d-flex flex-column min-vh-100">
 
-    <!-- Modern & Dynamic Navigation Bar -->
+    <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-success shadow-sm sticky-top py-2">
         <div class="container-fluid px-lg-5">
-            <!-- Logo / Brand -->
             <a class="navbar-brand d-flex align-items-center gap-2 fw-bold fs-4 me-lg-4" href="{{ url_for('home') }}">
                 <span>🍃</span> ZeroWaste Kitchen
             </a>
 
-            <!-- Mobile Toggler -->
             <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <!-- Navbar Items -->
             <div class="collapse navbar-collapse" id="navbarNav">
                 {% if current_user.is_authenticated %}
-                    <!-- User Logged In: Fully Featured Main Navigation Links -->
                     <ul class="navbar-nav me-auto gap-lg-1 my-2 my-lg-0 align-items-lg-center">
                         <li class="nav-item">
-                            <a class="nav-link text-white fw-semibold px-3 d-flex align-items-center gap-2 active" href="{{ url_for('home') }}">
+                            <a class="nav-link text-white fw-semibold px-3 d-flex align-items-center gap-2 {% if request.endpoint == 'home' %}active fw-bold{% else %}opacity-75 hover-white{% endif %}" href="{{ url_for('home') }}">
                                 <i class="bi bi-speedometer2"></i> Dashboard
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-white opacity-75 fw-semibold px-3 d-flex align-items-center gap-2 hover-white" href="#">
+                            <a class="nav-link text-white fw-semibold px-3 d-flex align-items-center gap-2 {% if request.endpoint == 'pantry' %}active fw-bold{% else %}opacity-75 hover-white{% endif %}" href="{{ url_for('pantry') }}">
                                 <i class="bi bi-basket"></i> My Pantry
                             </a>
                         </li>
@@ -84,35 +78,32 @@
                         </li>
                     </ul>
 
-                    <!-- User Right Side Menu: Notifications & Profile -->
                     <div class="d-flex align-items-center gap-3 ms-auto">
-                        
                         <!-- Notification Dropdown -->
-<div class="dropdown me-3">
-    <button class="btn btn-link text-white position-relative p-0" type="button" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-        <i class="bi bi-bell fs-4"></i>
-        {% if notifications and notifications|length > 0 %}
-            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                {{ notifications|length }}
-            </span>
-        {% endif %}
-    </button>
-    <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3 mt-2" aria-labelledby="notificationDropdown" style="width: 280px; max-height: 300px; overflow-y: auto;">
-        <li class="dropdown-header fw-bold text-dark border-bottom pb-2">Notifications</li>
-        
-        {% if notifications and notifications|length > 0 %}
-            {% for note in notifications %}
-                <li class="dropdown-item small text-wrap py-2 border-bottom">
-                    {{ note }}
-                </li>
-            {% endfor %}
-        {% else %}
-            <li class="dropdown-item small text-muted text-center py-3">
-                No new notifications
-            </li>
-        {% endif %}
-    </ul>
-</div>
+                        <div class="dropdown me-3">
+                            <button class="btn btn-link text-white position-relative p-0" type="button" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-bell fs-4"></i>
+                                {% if notifications and notifications|length > 0 %}
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                        {{ notifications|length }}
+                                    </span>
+                                {% endif %}
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3 mt-2" aria-labelledby="notificationDropdown" style="width: 280px; max-height: 300px; overflow-y: auto;">
+                                <li class="dropdown-header fw-bold text-dark border-bottom pb-2">Notifications</li>
+                                {% if notifications and notifications|length > 0 %}
+                                    {% for note in notifications %}
+                                        <li class="dropdown-item small text-wrap py-2 border-bottom">
+                                            {{ note }}
+                                        </li>
+                                    {% endfor %}
+                                {% else %}
+                                    <li class="dropdown-item small text-muted text-center py-3">
+                                        No new notifications
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </div>
 
                         <!-- User Profile Dropdown -->
                         <div class="dropdown">
@@ -140,10 +131,8 @@
                                 </li>
                             </ul>
                         </div>
-
                     </div>
                 {% else %}
-                    <!-- Guest User: Landing Page Navigation -->
                     <ul class="navbar-nav mx-auto gap-lg-3 my-2 my-lg-0">
                         <li class="nav-item">
                             <a class="nav-link text-white opacity-90 fw-semibold px-3 hover-white" href="{{ url_for('home') }}">Home</a>
@@ -172,12 +161,12 @@
         </div>
     </nav>
 
-    <!-- Flash Messages (Alerts) -->
+    <!-- Flash Messages -->
     <div class="container mt-3">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+                    <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm rounded-3" role="alert">
                         {{ message }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
@@ -186,14 +175,13 @@
         {% endwith %}
     </div>
 
-    <!-- Main Content Area -->
+    <!-- Main Content -->
     <main class="container-fluid px-lg-5 my-4 flex-grow-1">
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Dynamic Footer Section -->
+    <!-- Footer -->
     {% if current_user.is_authenticated %}
-        <!-- Compact Minimal Footer for Logged-In App Users -->
         <footer class="py-3 bg-white border-top mt-auto text-center text-muted small">
             <div class="container-fluid px-lg-5 d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
                 <div>
@@ -206,20 +194,15 @@
             </div>
         </footer>
     {% elif request.endpoint not in ['login', 'register'] %}
-        <!-- Full Rich Footer for Guest / Landing Page Users -->
         <footer class="bg-dark text-light pt-5 pb-4 mt-auto">
             <div class="container">
                 <div class="row g-4">
-                    
-                    <!-- Left Column: Branding & Newsletter -->
                     <div class="col-lg-5 col-md-12">
                         <h4 class="fw-bold text-success mb-3">🌿 ZeroWaste Kitchen</h4>
                         <p class="text-secondary small mb-4" style="max-width: 400px;">
                             From smart inventory tracking to personalized AI recipes, we provide everything you need to convert your kitchen into a zero-waste zone.
                         </p>
                         <h6 class="fw-semibold text-white mb-2">Stay up-to-date with ZeroWaste Kitchen!</h6>
-                        
-                        <!-- Newsletter Form -->
                         <form class="d-flex gap-2 mb-2" style="max-width: 400px;" action="#" method="POST">
                             <input type="email" class="form-control rounded-pill px-3" placeholder="Enter your email" required>
                             <button class="btn btn-success rounded-pill px-4 fw-bold text-nowrap" type="submit">Subscribe</button>
@@ -227,7 +210,6 @@
                         <small class="text-muted d-block fs-7">*Get weekly eco-friendly cooking tips and feature updates.</small>
                     </div>
 
-                    <!-- Middle Column: Explore -->
                     <div class="col-lg-3 col-md-6 ps-lg-5">
                         <h5 class="fw-bold text-white mb-3">Explore</h5>
                         <ul class="list-unstyled text-secondary small lh-lg mb-0">
@@ -239,7 +221,6 @@
                         </ul>
                     </div>
 
-                    <!-- Right Column: Contact & Social -->
                     <div class="col-lg-4 col-md-6">
                         <h5 class="fw-bold text-white mb-3">Connect With Us</h5>
                         <p class="text-secondary small mb-2">Have questions or suggestions? Reach out to us anytime!</p>
@@ -252,12 +233,10 @@
                             <a href="#" class="text-light opacity-75 social-icon" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
                         </div>
                     </div>
-
                 </div>
 
                 <hr class="border-secondary my-4 opacity-25">
 
-                <!-- Bottom Copyright -->
                 <div class="row align-items-center">
                     <div class="col-md-6 text-center text-md-start">
                         <p class="text-secondary small mb-0">&copy; 2026 ZeroWaste Kitchen. All rights reserved.</p>

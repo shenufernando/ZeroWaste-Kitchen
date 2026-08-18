@@ -28,12 +28,31 @@ login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 login_manager.login_message_category = 'info'
 
-# New Client Setup
+# Gemini AI Client Setup
 ai_client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+# Context Processor for Global Notifications (Shows notification on ALL pages)
+@app.context_processor
+def inject_notifications():
+    if current_user.is_authenticated:
+        items = PantryItem.query.filter_by(user_id=current_user.id).all()
+        today = datetime.now().date()
+        notifications = []
+        for item in items:
+            if item.expiration_date:
+                days_left = (item.expiration_date - today).days
+                if days_left < 0:
+                    notifications.append(f"❌ {item.name} has expired!")
+                elif days_left == 0:
+                    notifications.append(f"⚠️ {item.name} expires today!")
+                elif days_left <= 3:
+                    notifications.append(f"📦 {item.name} expires in {days_left} days")
+        return dict(notifications=notifications)
+    return dict(notifications=[])
 
 # ================= ROUTES =================
 
@@ -46,34 +65,21 @@ def home():
     items = PantryItem.query.filter_by(user_id=current_user.id).order_by(PantryItem.expiration_date.asc()).all()
     today = datetime.now().date()
     
-    # Expiry ළඟ items සහ Expired items වෙන වෙනම filter කරගැනීම
     expiring_soon_items = [item for item in items if item.expiration_date and 0 <= (item.expiration_date - today).days <= 3]
     expired_items = [item for item in items if item.expiration_date and (item.expiration_date - today).days < 0]
-    
-    expiring_soon_count = len(expiring_soon_items)
-    expired_count = len(expired_items)
-    
-    # Notifications List එක dynamic ලෙස සෑදීම
-    notifications = []
-    for item in expiring_soon_items:
-        days_left = (item.expiration_date - today).days
-        if days_left == 0:
-            msg = f"⚠️ {item.name} expires today!"
-        elif days_left == 1:
-            msg = f"⚠️ {item.name} expires tomorrow!"
-        else:
-            msg = f"📦 {item.name} expires in {days_left} days"
-        notifications.append(msg)
-        
-    for item in expired_items:
-        notifications.append(f"❌ {item.name} has expired!")
     
     return render_template('dashboard.html', 
                            items=items, 
                            today=today, 
-                           expiring_soon_count=expiring_soon_count, 
-                           expired_count=expired_count,
-                           notifications=notifications)
+                           expiring_soon_count=len(expiring_soon_items), 
+                           expired_count=len(expired_items))
+
+@app.route('/pantry')
+@login_required
+def pantry():
+    items = PantryItem.query.filter_by(user_id=current_user.id).order_by(PantryItem.expiration_date.asc()).all()
+    today = datetime.now().date()
+    return render_template('pantry.html', items=items, today=today)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -153,7 +159,18 @@ def add_pantry_item():
     else:
         flash('Please fill in all required fields.', 'danger')
 
-    return redirect(url_for('home'))
+    return redirect(url_for('pantry'))
+
+@app.route('/pantry/consume/<int:item_id>', methods=['POST'])
+@login_required
+def consume_pantry_item(item_id):
+    item = PantryItem.query.get_or_404(item_id)
+    if item.user_id == current_user.id:
+        item_name = item.name
+        db.session.delete(item)
+        db.session.commit()
+        flash(f'Great job! "{item_name}" consumed successfully.', 'success')
+    return redirect(url_for('pantry'))
 
 @app.route('/pantry/delete/<int:item_id>', methods=['POST'])
 @login_required
@@ -163,7 +180,7 @@ def delete_pantry_item(item_id):
         db.session.delete(item)
         db.session.commit()
         flash('Item removed from pantry.', 'info')
-    return redirect(url_for('home'))
+    return redirect(url_for('pantry'))
 
 @app.route('/pantry/edit/<int:item_id>', methods=['POST'])
 @login_required
@@ -181,24 +198,8 @@ def edit_pantry_item(item_id):
             
         db.session.commit()
         flash('Item updated successfully!', 'success')
-    return redirect(url_for('home'))
+    return redirect(url_for('pantry'))
 
-@app.route('/pantry/item/<int:item_id>', methods=['GET'])
-@login_required
-def get_pantry_item(item_id):
-    item = PantryItem.query.get_or_404(item_id)
-    if item.user_id == current_user.id:
-        return jsonify({
-            'id': item.id,
-            'name': item.name,
-            'category': item.category,
-            'quantity': item.quantity,
-            'unit': item.unit,
-            'expiration_date': item.expiration_date.strftime('%Y-%m-%d') if item.expiration_date else ''
-        })
-    return jsonify({'error': 'Unauthorized'}), 403
-
-# Updated Gemini 3.5 API Vision Route
 @app.route('/pantry/scan', methods=['POST'])
 @login_required
 def scan_pantry_item():
@@ -224,10 +225,12 @@ def scan_pantry_item():
         {
             "name": "Item Name",
             "category": "Produce",
-            "unit": "pcs"
+            "unit": "pcs",
+            "expiration_days": 7
         }
         Valid categories: Produce, Dairy, Meat, Pantry, Bakery, Beverages, Other
         Valid units: pcs, kg, g, l, ml, pack
+        Provide estimated expiration_days based on freshness.
         """
 
         response = ai_client.models.generate_content(
@@ -245,7 +248,6 @@ def scan_pantry_item():
         return jsonify(data)
 
     except Exception as e:
-        print("AI Scan Error Details:", str(e))
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
