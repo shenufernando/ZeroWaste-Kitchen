@@ -21,9 +21,15 @@
                             <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com" required>
                         </div>
                         
+                        <!-- Password Field with Show/Hide Toggle -->
                         <div class="mb-3">
                             <label for="password" class="form-label font-weight-bold">Password</label>
-                            <input type="password" class="form-control" id="password" name="password" placeholder="••••••••" required>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="password" name="password" placeholder="••••••••" required>
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                    <i class="bi bi-eye" id="toggleIcon"></i>
+                                </button>
+                            </div>
                         </div>
 
                         <div class="mb-4">
@@ -47,4 +53,22 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.getElementById('togglePassword').addEventListener('click', function () {
+        const passwordInput = document.getElementById('password');
+        const toggleIcon = document.getElementById('toggleIcon');
+        
+           // Toggle the password to be visible/invisible
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleIcon.classList.remove('bi-eye');
+            toggleIcon.classList.add('bi-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            toggleIcon.classList.remove('bi-eye-slash');
+            toggleIcon.classList.add('bi-eye');
+        }
+    });
+</script>
 {% endblock %}

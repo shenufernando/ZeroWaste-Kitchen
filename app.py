@@ -94,6 +94,7 @@ def generate_recipes():
     data = request.get_json()
     selected_ingredients = data.get('ingredients', [])
     meal_type = data.get('meal_type', 'Any')
+    cuisine_type = data.get('cuisine_type', 'Any')
     max_time = data.get('max_time', '30')
 
     if not selected_ingredients:
@@ -105,6 +106,7 @@ def generate_recipes():
     
     Filters:
     - Meal Type: {meal_type}
+    - Cuisine Style: {cuisine_type}
     - Max Prep/Cook Time: {max_time} minutes
     
     Return ONLY a JSON object containing an array of recipes with this exact structure:
@@ -120,7 +122,8 @@ def generate_recipes():
           "instructions": [
             "Step 1 instruction",
             "Step 2 instruction"
-          ]
+          ],
+          "youtube_query": "Recipe Name how to make"
         }}
       ]
     }}
