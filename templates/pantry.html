@@ -2,6 +2,31 @@
 {% block title %}My Pantry - ZeroWaste Kitchen{% endblock %}
 
 {% block content %}
+<style>
+    /* My Pantry Page Specific Background Styling */
+    body {
+        background: linear-gradient(rgba(248, 249, 250, 0.88), rgba(248, 249, 250, 0.88)), 
+                    url('https://images.unsplash.com/photo-1556911220-e15b29be8c8f?q=80&w=2070') no-repeat center center fixed !important;
+        background-size: cover !important;
+    }
+
+   body {
+   /* By reducing the Alpha value of the overlay from 0.88 to 0.75, the background image appears a little clearer and darker */
+    background: linear-gradient(rgba(240, 242, 245, 0.75), rgba(240, 242, 245, 0.75)), 
+                url('https://images.unsplash.com/photo-1556911220-e15b29be8c8f?q=80&w=2070') no-repeat center center fixed !important;
+    background-size: cover !important;
+}
+
+/* Slightly increase the Opacity to make the card background stand out more */
+.card, 
+.modal-content {
+    background: rgba(255, 255, 255, 0.90) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.6) !important;
+}
+</style>
+
 <div class="container py-4">
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div>
@@ -42,7 +67,7 @@
     <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0" id="pantryTable">
-                <thead class="bg-light">
+                <thead>
                     <tr>
                         <th class="ps-4">ITEM NAME</th>
                         <th>CATEGORY</th>
@@ -111,7 +136,7 @@
     </div>
 </div>
 
-<!-- Add Pantry Item Modal (Manual + AI Scan Option) -->
+<!-- Add Pantry Item Modal -->
 <div class="modal fade" id="addPantryModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 rounded-4 shadow">
