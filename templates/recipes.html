@@ -10,7 +10,7 @@
     }
 
     .card, .modal-content {
-        background: rgba(255, 255, 255, 0.90) !important;
+        background: rgba(255, 255, 255, 0.92) !important;
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         border: 1px solid rgba(255, 255, 255, 0.6) !important;
@@ -19,6 +19,25 @@
     .ingredient-checkbox:checked + .btn-outline-success {
         background-color: #198754 !important;
         color: white !important;
+    }
+
+    /* Modern YouTube Button Hover Effect */
+    .youtube-btn {
+        background: linear-gradient(135deg, #ff0000, #cc0000);
+        color: white !important;
+        transition: all 0.3s ease;
+    }
+    .youtube-btn:hover {
+        background: linear-gradient(135deg, #cc0000, #990000);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(255, 0, 0, 0.3) !important;
+    }
+
+    .recipe-card-img {
+        height: 220px;
+        object-fit: cover;
+        border-top-left-radius: 1rem;
+        border-top-right-radius: 1rem;
     }
 </style>
 
@@ -160,55 +179,68 @@ document.getElementById('generateBtn').addEventListener('click', function() {
         const container = document.getElementById('recipesContainer');
         container.innerHTML = '';
 
-        data.recipes.forEach(recipe => {
-            const card = document.createElement('div');
-            card.className = 'card border-0 shadow-sm rounded-4 p-4';
-            
-            let usedBadgeHtml = recipe.used_ingredients.map(ing => `<span class="badge bg-success-subtle text-success border border-success me-1"><i class="bi bi-check-circle me-1"></i>${ing}</span>`).join('');
-            let missingBadgeHtml = recipe.missing_ingredients.map(ing => `<span class="badge bg-light text-dark border me-1"><i class="bi bi-plus-circle me-1"></i>${ing}</span>`).join('');
-            let stepsHtml = recipe.instructions.map((step, index) => `<li class="mb-2"><small><strong>Step ${index + 1}:</strong> ${step}</small></li>`).join('');
+        // Match Percentage 
+        const sortedRecipes = data.recipes.sort((a, b) => {
+            const scoreA = parseInt(a.match_score) || 0;
+            const scoreB = parseInt(b.match_score) || 0;
+            return scoreB - scoreA;
+        });
 
-            // YouTube Video Embed Section
-            let videoHtml = '';
-            const query = recipe.youtube_query || `${recipe.title} recipe`;
-            const videoSearchUrl = `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(query)}`;
+        sortedRecipes.forEach((recipe, index) => {
+            const card = document.createElement('div');
+            card.className = 'card border-0 shadow-sm rounded-4 overflow-hidden mb-3';
             
-            videoHtml = `
-                <div class="mt-4 pt-3 border-top">
-                    <h6 class="fw-bold text-danger mb-2"><i class="bi bi-youtube me-2"></i>Watch Video Guide:</h6>
-                    <div class="ratio ratio-16x9 rounded-3 overflow-hidden shadow-sm">
-                        <iframe src="${videoSearchUrl}" title="${recipe.title} Video" allowfullscreen></iframe>
-                    </div>
-                </div>
-            `;
+            let usedBadgeHtml = recipe.used_ingredients.map(ing => `<span class="badge bg-success-subtle text-success border border-success me-1 mb-1"><i class="bi bi-check-circle me-1"></i>${ing}</span>`).join('');
+            let missingBadgeHtml = recipe.missing_ingredients.map(ing => `<span class="badge bg-light text-dark border me-1 mb-1"><i class="bi bi-plus-circle me-1"></i>${ing}</span>`).join('');
+            let stepsHtml = recipe.instructions.map((step, idx) => `<li class="mb-2"><small><strong>Step ${idx + 1}:</strong> ${step}</small></li>`).join('');
+
+            // Unique Image Generator for Each Card
+            const cleanTitle = encodeURIComponent(recipe.title.replace(/[^a-zA-Z0-9 ]/g, "").trim());
+            const randomSeed = Math.floor(Math.random() * 10000) + index;
+            
+            const imageUrl = `https://image.pollinations.ai/prompt/delicious%20food%20photo%20of%20${cleanTitle}?width=800&height=400&nologo=true&seed=${randomSeed}`;
+            const fallbackUrl = `https://loremflickr.com/800/400/food,dish/all?lock=${index + 10}`;
+
+            // YouTube Link
+            const query = recipe.youtube_query || `${recipe.title} recipe`;
+            const youtubeSearchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
 
             card.innerHTML = `
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <h5 class="fw-bold text-dark mb-0">${recipe.title}</h5>
-                    <span class="badge bg-success rounded-pill px-3 py-2"><i class="bi bi-lightning-charge me-1"></i>${recipe.match_score} Match</span>
-                </div>
-                <div class="text-muted small mb-3">
-                    <i class="bi bi-clock me-1"></i> ${recipe.time}
-                </div>
+                <img src="${imageUrl}" class="w-100 recipe-card-img" alt="${recipe.title}" loading="lazy" onerror="this.onerror=null; this.src='${fallbackUrl}';">
+                <div class="p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="fw-bold text-dark mb-0">${recipe.title}</h5>
+                        <span class="badge bg-success rounded-pill px-3 py-2 ms-2 fs-6"><i class="bi bi-lightning-charge-fill me-1"></i>${recipe.match_score} Match</span>
+                    </div>
+                    <div class="text-muted small mb-3">
+                        <i class="bi bi-clock me-1"></i> ${recipe.time}
+                    </div>
 
-                <div class="mb-3">
-                    <div class="small fw-semibold mb-1 text-secondary">Ingredients Used from Pantry:</div>
-                    <div>${usedBadgeHtml || '<span class="small text-muted">None</span>'}</div>
+                    <div class="mb-3">
+                        <div class="small fw-semibold mb-1 text-secondary">Ingredients Used from Pantry:</div>
+                        <div>${usedBadgeHtml || '<span class="small text-muted">None</span>'}</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="small fw-semibold mb-1 text-secondary">Extra Ingredients Needed:</div>
+                        <div>${missingBadgeHtml || '<span class="small text-muted">None</span>'}</div>
+                    </div>
+
+                    <hr class="my-3 opacity-25">
+
+                    <div>
+                        <div class="small fw-semibold mb-2 text-dark"><i class="bi bi-list-ol me-1 text-success"></i>Cooking Instructions:</div>
+                        <ol class="ps-3 mb-0">${stepsHtml}</ol>
+                    </div>
+
+                    <div class="mt-4 pt-2 border-top">
+                        <a href="${youtubeSearchUrl}" target="_blank" class="btn youtube-btn w-100 py-2 px-3 rounded-3 d-flex align-items-center justify-content-center gap-2 shadow-sm text-decoration-none border-0">
+                            <i class="bi bi-youtube fs-5"></i>
+                            <span class="fw-bold">Watch Video Guide on YouTube</span>
+                            <i class="bi bi-box-arrow-up-right small ms-auto opacity-75"></i>
+                        </a>
+                    </div>
                 </div>
-
-                <div class="mb-3">
-                    <div class="small fw-semibold mb-1 text-secondary">Extra Ingredients Needed:</div>
-                    <div>${missingBadgeHtml || '<span class="small text-muted">None</span>'}</div>
-                </div>
-
-                <hr class="my-3 opacity-25">
-
-                <div>
-                    <div class="small fw-semibold mb-2 text-dark"><i class="bi bi-list-ol me-1 text-success"></i>Cooking Instructions:</div>
-                    <ol class="ps-3 mb-0">${stepsHtml}</ol>
-                </div>
-
-                ${videoHtml}
             `;
             container.appendChild(card);
         });
