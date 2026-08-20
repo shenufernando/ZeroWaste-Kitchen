@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block title %}Smart Shopping List - ZeroWaste Kitchen{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        background: linear-gradient(rgba(240, 242, 245, 0.75), rgba(240, 242, 245, 0.75)), 
+                    url('https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2070') no-repeat center center fixed !important;
+        background-size: cover !important;
+    }
+    .card {
+        background: rgba(255, 255, 255, 0.92) !important;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.6) !important;
+    }
+    .completed-item {
+        text-decoration: line-through;
+        opacity: 0.6;
+    }
+    .move-btn {
+        transition: all 0.2s ease;
+    }
+    .move-btn:hover {
+        background-color: #198754 !important;
+        color: #fff !important;
+    }
+</style>
+
+<div class="container py-4" style="max-width: 850px;">
+    <!-- Header -->
+    <div class="text-center mb-4">
+        <h2 class="fw-bold text-success mb-1">
+            <i class="bi bi-cart-check me-2"></i>Smart Shopping List
+        </h2>
+        <p class="text-muted">Manage missing ingredients from AI recipes and your daily kitchen supplies.</p>
+    </div>
+
+    <!-- Manual Item Input Form -->
+    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4">
+        <form action="{{ url_for('add_shopping_item') }}" method="POST" class="d-flex gap-2">
+            <input type="text" name="name" class="form-control rounded-pill px-3" placeholder="Add an item (e.g., Milk, Olive Oil, Eggs)..." required>
+            <button type="submit" class="btn btn-success rounded-pill px-4 fw-semibold text-nowrap">
+                <i class="bi bi-plus-lg me-1"></i> Add Item
+            </button>
+        </form>
+    </div>
+
+    {% set pending_items = items | selectattr('is_bought', 'equalto', false) | list %}
+    {% set bought_items = items | selectattr('is_bought', 'equalto', true) | list %}
+
+    <!-- Section 1: Items to Buy (Pending) -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold text-dark mb-0">
+                <i class="bi bi-list-task me-2 text-success"></i>Items to Buy
+            </h5>
+            <span class="badge bg-success rounded-pill px-3 py-2">{{ pending_items | length }} Items</span>
+        </div>
+
+        <div class="list-group list-group-flush">
+            {% for item in pending_items %}
+                <div class="list-group-item d-flex justify-content-between align-items-center bg-transparent py-2 px-1 border-bottom">
+                    <div class="d-flex align-items-center gap-2">
+                        <form action="{{ url_for('toggle_shopping_item', item_id=item.id) }}" method="POST" class="m-0">
+                            <input type="checkbox" class="form-check-input fs-5" style="cursor: pointer;" onchange="this.form.submit()" title="Mark as Bought">
+                        </form>
+                        <span class="fw-semibold text-dark ms-2">{{ item.name }}</span>
+
+                        <!-- Auto Category Badges -->
+                        {% set name_lower = item.name.lower() %}
+                        {% if 'milk' in name_lower or 'cheese' in name_lower or 'butter' in name_lower or 'yogurt' in name_lower or 'curd' in name_lower %}
+                            <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill ms-1" style="font-size: 0.7rem;">Dairy</span>
+                        {% elif 'apple' in name_lower or 'banana' in name_lower or 'tomato' in name_lower or 'onion' in name_lower or 'berry' in name_lower or 'potato' in name_lower or 'carrot' in name_lower %}
+                            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill ms-1" style="font-size: 0.7rem;">Produce</span>
+                        {% elif 'chicken' in name_lower or 'fish' in name_lower or 'beef' in name_lower or 'pork' in name_lower or 'egg' in name_lower %}
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill ms-1" style="font-size: 0.7rem;">Protein</span>
+                        {% else %}
+                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill ms-1" style="font-size: 0.7rem;">Pantry</span>
+                        {% endif %}
+                    </div>
+
+                    <form action="{{ url_for('delete_shopping_item', item_id=item.id) }}" method="POST" class="m-0">
+                        <button type="submit" class="btn btn-sm btn-link text-danger p-0 border-0" title="Delete">
+                            <i class="bi bi-trash fs-5"></i>
+                        </button>
+                    </form>
+                </div>
+            {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-cart-x fs-1 text-muted d-block mb-2"></i>
+                    <h6 class="text-muted">No pending items in your shopping list!</h6>
+                    <p class="small text-muted mb-0">Add items above or click "Add Missing Ingredients" from AI Recipes.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Section 2: Purchased Items (Bought) -->
+    {% if bought_items %}
+    <div class="card border-0 shadow-sm rounded-4 p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="fw-bold text-secondary mb-0">
+                <i class="bi bi-check2-circle me-2"></i>Purchased Items ({{ bought_items | length }})
+            </h6>
+            
+            <!-- Clear Completed Button -->
+            <form action="{{ url_for('clear_completed_shopping_items') }}" method="POST" class="m-0">
+                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1">
+                    <i class="bi bi-eraser me-1"></i> Clear Completed
+                </button>
+            </form>
+        </div>
+
+        <div class="list-group list-group-flush">
+            {% for item in bought_items %}
+                <div class="list-group-item d-flex justify-content-between align-items-center bg-transparent py-2 px-1 border-bottom">
+                    <div class="d-flex align-items-center gap-2">
+                        <form action="{{ url_for('toggle_shopping_item', item_id=item.id) }}" method="POST" class="m-0">
+                            <input type="checkbox" class="form-check-input fs-5" style="cursor: pointer;" checked onchange="this.form.submit()" title="Mark as Unbought">
+                        </form>
+                        <span class="completed-item text-muted ms-2">{{ item.name }}</span>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2">
+                        <!-- Move to Pantry Smart Button -->
+                        <form action="{{ url_for('move_to_pantry', item_id=item.id) }}" method="POST" class="m-0">
+                            <button type="submit" class="btn btn-sm btn-outline-success rounded-pill px-2 py-1 small fw-semibold move-btn" title="Add directly to My Pantry">
+                                <i class="bi bi-box-arrow-in-right me-1"></i> Move to Pantry
+                            </button>
+                        </form>
+
+                        <form action="{{ url_for('delete_shopping_item', item_id=item.id) }}" method="POST" class="m-0">
+                            <button type="submit" class="btn btn-sm btn-link text-danger p-0 border-0" title="Delete">
+                                <i class="bi bi-trash fs-5"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

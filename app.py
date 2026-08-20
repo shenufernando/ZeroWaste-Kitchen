@@ -1,7 +1,7 @@
 import warnings
 warnings.filterwarnings("ignore", category=FutureWarning)
 
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import json
 import io
@@ -35,7 +35,7 @@ ai_client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# Context Processor for Global Notifications (Shows notification on ALL pages)
+# Context Processor for Global Notifications
 @app.context_processor
 def inject_notifications():
     if current_user.is_authenticated:
@@ -200,6 +200,34 @@ def delete_shopping_item(item_id):
         db.session.delete(item)
         db.session.commit()
         flash('Item removed.', 'info')
+    return redirect(url_for('shopping_list'))
+
+@app.route('/shopping-list/move-to-pantry/<int:item_id>', methods=['POST'])
+@login_required
+def move_to_pantry(item_id):
+    shop_item = ShoppingItem.query.get_or_404(item_id)
+    if shop_item.user_id == current_user.id:
+        default_exp = datetime.now().date() + timedelta(days=7)
+        new_pantry_item = PantryItem(
+            name=shop_item.name,
+            quantity=1.0,
+            unit='pcs',
+            expiration_date=default_exp,
+            category='Pantry',
+            user_id=current_user.id
+        )
+        db.session.add(new_pantry_item)
+        db.session.delete(shop_item)
+        db.session.commit()
+        flash(f'"{shop_item.name}" moved to My Pantry!', 'success')
+    return redirect(url_for('shopping_list'))
+
+@app.route('/shopping-list/clear-completed', methods=['POST'])
+@login_required
+def clear_completed_shopping_items():
+    ShoppingItem.query.filter_by(user_id=current_user.id, is_bought=True).delete()
+    db.session.commit()
+    flash('Completed items cleared!', 'info')
     return redirect(url_for('shopping_list'))
 
 # ================= AUTHENTICATION & PANTRY ROUTES =================

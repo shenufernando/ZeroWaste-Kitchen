@@ -67,7 +67,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-white opacity-75 fw-semibold px-3 d-flex align-items-center gap-2 hover-white" href="#">
+                            <a class="nav-link text-white fw-semibold px-3 d-flex align-items-center gap-2 {% if request.endpoint == 'shopping_list' %}active fw-bold{% else %}opacity-75 hover-white{% endif %}" href="{{ url_for('shopping_list') }}">
                                 <i class="bi bi-cart-check"></i> Shopping List
                             </a>
                         </li>
