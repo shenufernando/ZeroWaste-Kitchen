@@ -39,6 +39,14 @@
         border-top-left-radius: 1rem;
         border-top-right-radius: 1rem;
     }
+
+    .add-single-btn {
+        transition: transform 0.2s ease, color 0.2s ease;
+    }
+    .add-single-btn:hover {
+        transform: scale(1.2);
+        color: #198754 !important;
+    }
 </style>
 
 <div class="container py-4">
@@ -191,14 +199,26 @@ document.getElementById('generateBtn').addEventListener('click', function() {
             card.className = 'card border-0 shadow-sm rounded-4 overflow-hidden mb-3';
             
             let usedBadgeHtml = recipe.used_ingredients.map(ing => `<span class="badge bg-success-subtle text-success border border-success me-1 mb-1"><i class="bi bi-check-circle me-1"></i>${ing}</span>`).join('');
-            let missingBadgeHtml = recipe.missing_ingredients.map(ing => `<span class="badge bg-light text-dark border me-1 mb-1"><i class="bi bi-plus-circle me-1"></i>${ing}</span>`).join('');
+            
+            // Setting up the Missing Badge HTML to add one by one
+            let missingBadgeHtml = recipe.missing_ingredients.map(ing => {
+                const cleanIng = ing.replace(/'/g, "\\'");
+                return `
+                    <span class="badge bg-light text-dark border me-1 mb-1 p-2 d-inline-flex align-items-center gap-1">
+                        ${ing}
+                        <button onclick="addSingleToShoppingList('${cleanIng}')" class="btn btn-sm p-0 border-0 ms-1 text-secondary add-single-btn" title="Add '${cleanIng}' to Shopping List">
+                            <i class="bi bi-cart-plus-fill fs-6"></i>
+                        </button>
+                    </span>`;
+            }).join('');
+
             let stepsHtml = recipe.instructions.map((step, idx) => `<li class="mb-2"><small><strong>Step ${idx + 1}:</strong> ${step}</small></li>`).join('');
 
-            // Missing Ingredients තිබේ නම් පමනක් Shopping List එකට එකතු කරන බටන් එක හදාගැනීම
+            // The button to add all the missing ingredients at once
             const missingItemsJson = JSON.stringify(recipe.missing_ingredients).replace(/'/g, "&apos;");
             let addShoppingBtnHtml = recipe.missing_ingredients.length > 0 ? 
                 `<button onclick='addToShoppingList(${missingItemsJson})' class="btn btn-sm btn-outline-success rounded-pill ms-auto py-0 px-2 small fw-semibold">
-                    <i class="bi bi-cart-plus me-1"></i>Add Missing to List
+                    <i class="bi bi-cart-plus me-1"></i>Add All Missing
                 </button>` : '';
 
             // Unique Image Generator for Each Card
@@ -264,7 +284,7 @@ document.getElementById('generateBtn').addEventListener('click', function() {
     });
 });
 
-// Missing Ingredients Shopping List එකට එකතු කරන Function එක
+// To add all the Missing Ingredients at once
 function addToShoppingList(items) {
     fetch('/add-to-shopping-list', {
         method: 'POST',
@@ -277,6 +297,24 @@ function addToShoppingList(items) {
             alert('🛒 ' + data.message);
         } else {
             alert('Failed to add items.');
+        }
+    })
+    .catch(err => alert('Something went wrong!'));
+}
+
+// To add a single ingredient
+function addSingleToShoppingList(itemName) {
+    fetch('/add-to-shopping-list', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: [itemName] })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(data.success) {
+            alert(`🛒 '${itemName}' added to Shopping List!`);
+        } else {
+            alert('Failed to add item.');
         }
     })
     .catch(err => alert('Something went wrong!'));
