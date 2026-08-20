@@ -17,19 +17,30 @@ class User(db.Model, UserMixin):
     
     pantry_items = db.relationship('PantryItem', backref='owner', lazy=True, cascade="all, delete-orphan")
     saved_recipes = db.relationship('SavedRecipe', backref='user', lazy=True, cascade="all, delete-orphan")
+    shopping_items = db.relationship('ShoppingItem', backref='user', lazy=True, cascade="all, delete-orphan")
 
 class PantryItem(db.Model):
     __tablename__ = 'pantry_items'
     
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    name = db.Column(db.String(100), nullable=False) # item_name was changed to name
+    name = db.Column(db.String(100), nullable=False)
     category = db.Column(db.String(50), default='General')
-    quantity = db.Column(db.Float, default=1.0) # Floated to fit app.py
-    unit = db.Column(db.String(20), nullable=True) # unit column added
+    quantity = db.Column(db.Float, default=1.0)
+    unit = db.Column(db.String(20), nullable=True)
     added_date = db.Column(db.Date, default=datetime.utcnow().date)
-    expiration_date = db.Column(db.Date, nullable=False) # Expiry_date replaced with expiration_date
+    expiration_date = db.Column(db.Date, nullable=False)
     status = db.Column(db.String(20), default='Fresh')
+
+class ShoppingItem(db.Model):
+    __tablename__ = 'shopping_items'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    quantity = db.Column(db.String(50), default="1")
+    is_bought = db.Column(db.Boolean, default=False)
+    added_date = db.Column(db.DateTime, default=datetime.utcnow)
 
 class Recipe(db.Model):
     __tablename__ = 'recipes'

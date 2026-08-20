@@ -10,7 +10,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, jso
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from config import Config
-from models import db, User, PantryItem, Recipe, SavedRecipe
+from models import db, User, PantryItem, Recipe, SavedRecipe, ShoppingItem
 
 from dotenv import load_dotenv
 from google import genai
@@ -143,6 +143,66 @@ def generate_recipes():
 
     except Exception as e:
         return jsonify({'error': f'AI Generation failed: {str(e)}'}), 500
+
+# ================= SHOPPING LIST ROUTES =================
+
+@app.route('/shopping-list')
+@login_required
+def shopping_list():
+    items = ShoppingItem.query.filter_by(user_id=current_user.id).order_by(ShoppingItem.id.desc()).all()
+    return render_template('shopping_list.html', items=items)
+
+@app.route('/shopping-list/add', methods=['POST'])
+@login_required
+def add_shopping_item():
+    name = request.form.get('name')
+    if name:
+        new_item = ShoppingItem(name=name, user_id=current_user.id)
+        db.session.add(new_item)
+        db.session.commit()
+        flash('Item added to Shopping List!', 'success')
+    return redirect(url_for('shopping_list'))
+
+@app.route('/add-to-shopping-list', methods=['POST'])
+@login_required
+def add_missing_to_shopping_list():
+    data = request.get_json()
+    items = data.get('items', [])
+    
+    if not items:
+        return jsonify({'error': 'No items provided'}), 400
+
+    added_count = 0
+    for item_name in items:
+        existing = ShoppingItem.query.filter_by(user_id=current_user.id, name=item_name, is_bought=False).first()
+        if not existing:
+            new_item = ShoppingItem(name=item_name, user_id=current_user.id)
+            db.session.add(new_item)
+            added_count += 1
+            
+    db.session.commit()
+    return jsonify({'success': True, 'message': f'{added_count} items added to Shopping List!'})
+
+@app.route('/shopping-list/toggle/<int:item_id>', methods=['POST'])
+@login_required
+def toggle_shopping_item(item_id):
+    item = ShoppingItem.query.get_or_404(item_id)
+    if item.user_id == current_user.id:
+        item.is_bought = not item.is_bought
+        db.session.commit()
+    return redirect(url_for('shopping_list'))
+
+@app.route('/shopping-list/delete/<int:item_id>', methods=['POST'])
+@login_required
+def delete_shopping_item(item_id):
+    item = ShoppingItem.query.get_or_404(item_id)
+    if item.user_id == current_user.id:
+        db.session.delete(item)
+        db.session.commit()
+        flash('Item removed.', 'info')
+    return redirect(url_for('shopping_list'))
+
+# ================= AUTHENTICATION & PANTRY ROUTES =================
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
