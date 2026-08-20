@@ -19,11 +19,23 @@
         opacity: 0.6;
     }
     .move-btn {
-        transition: all 0.2s ease;
+        transition: all 0.2s ease-in-out;
     }
     .move-btn:hover {
         background-color: #198754 !important;
         color: #fff !important;
+        transform: translateY(-1px);
+    }
+    .clear-btn {
+        transition: all 0.2s ease-in-out;
+    }
+    .clear-btn:hover {
+        background-color: #dc3545 !important;
+        color: #fff !important;
+        transform: translateY(-1px);
+    }
+    .fs-7 {
+        font-size: 0.8rem;
     }
 </style>
 
@@ -39,8 +51,8 @@
     <!-- Manual Item Input Form -->
     <div class="card border-0 shadow-sm rounded-4 p-3 mb-4">
         <form action="{{ url_for('add_shopping_item') }}" method="POST" class="d-flex gap-2">
-            <input type="text" name="name" class="form-control rounded-pill px-3" placeholder="Add an item (e.g., Milk, Olive Oil, Eggs)..." required>
-            <button type="submit" class="btn btn-success rounded-pill px-4 fw-semibold text-nowrap">
+            <input type="text" name="name" class="form-control form-control-lg border-0 bg-light rounded-pill px-4" placeholder="Add an item (e.g., Milk, Olive Oil, Eggs)..." required>
+            <button type="submit" class="btn btn-success btn-lg rounded-pill px-4 fw-semibold text-nowrap shadow-sm">
                 <i class="bi bi-plus-lg me-1"></i> Add Item
             </button>
         </form>
@@ -55,12 +67,12 @@
             <h5 class="fw-bold text-dark mb-0">
                 <i class="bi bi-list-task me-2 text-success"></i>Items to Buy
             </h5>
-            <span class="badge bg-success rounded-pill px-3 py-2">{{ pending_items | length }} Items</span>
+            <span class="badge bg-success rounded-pill px-3 py-2 shadow-sm">{{ pending_items | length }} Items</span>
         </div>
 
         <div class="list-group list-group-flush">
             {% for item in pending_items %}
-                <div class="list-group-item d-flex justify-content-between align-items-center bg-transparent py-2 px-1 border-bottom">
+                <div class="list-group-item d-flex justify-content-between align-items-center bg-transparent py-3 px-1 border-bottom">
                     <div class="d-flex align-items-center gap-2">
                         <form action="{{ url_for('toggle_shopping_item', item_id=item.id) }}" method="POST" class="m-0">
                             <input type="checkbox" class="form-check-input fs-5" style="cursor: pointer;" onchange="this.form.submit()" title="Mark as Bought">
@@ -89,7 +101,7 @@
             {% else %}
                 <div class="text-center py-4">
                     <i class="bi bi-cart-x fs-1 text-muted d-block mb-2"></i>
-                    <h6 class="text-muted">No pending items in your shopping list!</h6>
+                    <h6 class="text-muted fw-semibold">No pending items in your shopping list!</h6>
                     <p class="small text-muted mb-0">Add items above or click "Add Missing Ingredients" from AI Recipes.</p>
                 </div>
             {% endfor %}
@@ -101,37 +113,37 @@
     <div class="card border-0 shadow-sm rounded-4 p-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h6 class="fw-bold text-secondary mb-0">
-                <i class="bi bi-check2-circle me-2"></i>Purchased Items ({{ bought_items | length }})
+                <i class="bi bi-check2-circle me-2 text-success"></i>Purchased Items ({{ bought_items | length }})
             </h6>
             
             <!-- Clear Completed Button -->
             <form action="{{ url_for('clear_completed_shopping_items') }}" method="POST" class="m-0">
-                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1">
-                    <i class="bi bi-eraser me-1"></i> Clear Completed
+                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 text-nowrap clear-btn shadow-sm fs-7 fw-semibold">
+                    <i class="bi bi-eraser-fill me-1"></i> Clear Completed
                 </button>
             </form>
         </div>
 
         <div class="list-group list-group-flush">
             {% for item in bought_items %}
-                <div class="list-group-item d-flex justify-content-between align-items-center bg-transparent py-2 px-1 border-bottom">
+                <div class="list-group-item d-flex justify-content-between align-items-center bg-transparent py-3 px-1 border-bottom">
                     <div class="d-flex align-items-center gap-2">
                         <form action="{{ url_for('toggle_shopping_item', item_id=item.id) }}" method="POST" class="m-0">
                             <input type="checkbox" class="form-check-input fs-5" style="cursor: pointer;" checked onchange="this.form.submit()" title="Mark as Unbought">
                         </form>
-                        <span class="completed-item text-muted ms-2">{{ item.name }}</span>
+                        <span class="completed-item text-muted ms-2 fw-semibold">{{ item.name }}</span>
                     </div>
 
                     <div class="d-flex align-items-center gap-2">
                         <!-- Move to Pantry Smart Button -->
                         <form action="{{ url_for('move_to_pantry', item_id=item.id) }}" method="POST" class="m-0">
-                            <button type="submit" class="btn btn-sm btn-outline-success rounded-pill px-2 py-1 small fw-semibold move-btn" title="Add directly to My Pantry">
-                                <i class="bi bi-box-arrow-in-right me-1"></i> Move to Pantry
+                            <button type="submit" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1 fs-7 fw-semibold move-btn shadow-sm" title="Add directly to My Pantry">
+                                <i class="bi bi-box-arrow-in-down me-1"></i> Move to Pantry
                             </button>
                         </form>
 
                         <form action="{{ url_for('delete_shopping_item', item_id=item.id) }}" method="POST" class="m-0">
-                            <button type="submit" class="btn btn-sm btn-link text-danger p-0 border-0" title="Delete">
+                            <button type="submit" class="btn btn-sm btn-link text-danger p-0 border-0 ms-1" title="Delete">
                                 <i class="bi bi-trash fs-5"></i>
                             </button>
                         </form>
