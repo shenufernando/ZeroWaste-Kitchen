@@ -6,6 +6,7 @@ import os
 import json
 import io
 from PIL import Image
+from werkzeug.utils import secure_filename
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
@@ -20,6 +21,11 @@ load_dotenv()
 
 app = Flask(__name__)
 app.config.from_object(Config)
+
+# Upload Folder Configuration for Profile Pictures
+UPLOAD_FOLDER = os.path.join('static', 'uploads')
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 db.init_app(app)
 bcrypt = Bcrypt(app)
@@ -163,19 +169,16 @@ def analytics():
     expiring_soon = sum(1 for item in items if item.expiration_date and 0 <= (item.expiration_date - today).days <= 3)
     fresh_items = max(0, total_items - (expired_items + expiring_soon))
     
-    # Financial & Eco Impact Estimates (Based on items managed)
     consumed_saved_count = max(5, total_items * 2)
     est_money_saved = round(consumed_saved_count * 350.0, 2)
     est_co2_reduced = round(consumed_saved_count * 1.2, 1)
     waste_prevention_rate = round(((total_items - expired_items) / total_items * 100), 1) if total_items > 0 else 100.0
 
-    # Category Breakdown
     categories = {}
     for item in items:
         cat = item.category if item.category else 'Pantry'
         categories[cat] = categories.get(cat, 0) + 1
 
-    # AI Smart Insights
     insights = []
     if expired_items > 0:
         insights.append(f"⚠️ You have {expired_items} expired item(s). Consider clearing them to keep your pantry organized.")
@@ -196,6 +199,45 @@ def analytics():
                            est_co2_reduced=est_co2_reduced,
                            waste_prevention_rate=waste_prevention_rate,
                            insights=insights)
+
+# ================= SETTINGS ROUTE =================
+
+@app.route('/settings', methods=['GET', 'POST'])
+@login_required
+def settings():
+    if request.method == 'POST':
+        name = request.form.get('name')
+        email = request.form.get('email')
+        new_password = request.form.get('password')
+        profile_picture = request.files.get('profile_picture')
+
+        # Check if email is already taken by another user
+        existing_user = User.query.filter(User.email == email, User.id != current_user.id).first()
+        if existing_user:
+            flash('This email address is already in use by another account.', 'danger')
+            return redirect(url_for('settings'))
+
+        current_user.name = name
+        current_user.email = email
+
+        # Password update
+        if new_password:
+            current_user.password = bcrypt.generate_password_hash(new_password).decode('utf-8')
+
+        # Profile Picture upload logic (If User model has profile_image column)
+        if profile_picture and profile_picture.filename != '':
+            filename = secure_filename(f"user_{current_user.id}_{profile_picture.filename}")
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            profile_picture.save(filepath)
+            
+            if hasattr(current_user, 'profile_image'):
+                current_user.profile_image = f"uploads/{filename}"
+
+        db.session.commit()
+        flash('Settings updated successfully!', 'success')
+        return redirect(url_for('settings'))
+
+    return render_template('settings.html')
 
 # ================= SHOPPING LIST ROUTES =================
 

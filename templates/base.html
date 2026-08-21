@@ -119,7 +119,7 @@
                                     </span>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item py-2 d-flex align-items-center gap-2" href="#">
+                                    <a class="dropdown-item py-2 d-flex align-items-center gap-2" href="{{ url_for('settings') }}">
                                         <i class="bi bi-gear text-secondary"></i> Settings
                                     </a>
                                 </li>
@@ -252,6 +252,6 @@
 
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ url_for('static', filename='filename=js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>
