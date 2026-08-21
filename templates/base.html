@@ -108,7 +108,13 @@
                         <!-- User Profile Dropdown -->
                         <div class="dropdown">
                             <a class="nav-link text-white dropdown-toggle fw-semibold d-flex align-items-center gap-2 py-1 px-3 rounded-pill bg-white bg-opacity-10" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-person-circle fs-5"></i>
+                                {% if current_user.profile_image %}
+                                    <img src="{{ url_for('static', filename=current_user.profile_image) }}" class="rounded-circle" style="width: 26px; height: 26px; object-fit: cover;">
+                                {% elif current_user.profile_pic %}
+                                    <img src="{{ url_for('static', filename='uploads/' + current_user.profile_pic) }}" class="rounded-circle" style="width: 26px; height: 26px; object-fit: cover;">
+                                {% else %}
+                                    <i class="bi bi-person-circle fs-5"></i>
+                                {% endif %}
                                 <span>{{ current_user.name }}</span>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2">

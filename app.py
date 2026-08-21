@@ -23,7 +23,7 @@ app = Flask(__name__)
 app.config.from_object(Config)
 
 # Upload Folder Configuration for Profile Pictures
-UPLOAD_FOLDER = os.path.join('static', 'uploads')
+UPLOAD_FOLDER = os.path.join(app.root_path, 'static', 'uploads')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
@@ -209,7 +209,7 @@ def settings():
         name = request.form.get('name')
         email = request.form.get('email')
         new_password = request.form.get('password')
-        profile_picture = request.files.get('profile_picture')
+        profile_picture = request.files.get('profile_picture') or request.files.get('profile_pic')
 
         # Check if email is already taken by another user
         existing_user = User.query.filter(User.email == email, User.id != current_user.id).first()
@@ -224,14 +224,17 @@ def settings():
         if new_password:
             current_user.password = bcrypt.generate_password_hash(new_password).decode('utf-8')
 
-        # Profile Picture upload logic (If User model has profile_image column)
+        # Profile Picture upload logic
         if profile_picture and profile_picture.filename != '':
             filename = secure_filename(f"user_{current_user.id}_{profile_picture.filename}")
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             profile_picture.save(filepath)
             
+            # Database model attributes (support both profile_image & profile_pic)
             if hasattr(current_user, 'profile_image'):
-                current_user.profile_image = f"uploads/{filename}"
+                current_user.profile_image = filename
+            if hasattr(current_user, 'profile_pic'):
+                current_user.profile_pic = filename
 
         db.session.commit()
         flash('Settings updated successfully!', 'success')
