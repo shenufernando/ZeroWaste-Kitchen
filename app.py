@@ -150,6 +150,53 @@ def generate_recipes():
     except Exception as e:
         return jsonify({'error': f'AI Generation failed: {str(e)}'}), 500
 
+# ================= ADVANCED ANALYTICS ROUTE =================
+
+@app.route('/analytics')
+@login_required
+def analytics():
+    items = PantryItem.query.filter_by(user_id=current_user.id).all()
+    today = datetime.now().date()
+    
+    total_items = len(items)
+    expired_items = sum(1 for item in items if item.expiration_date and (item.expiration_date - today).days < 0)
+    expiring_soon = sum(1 for item in items if item.expiration_date and 0 <= (item.expiration_date - today).days <= 3)
+    fresh_items = max(0, total_items - (expired_items + expiring_soon))
+    
+    # Financial & Eco Impact Estimates (Based on items managed)
+    consumed_saved_count = max(5, total_items * 2)
+    est_money_saved = round(consumed_saved_count * 350.0, 2)
+    est_co2_reduced = round(consumed_saved_count * 1.2, 1)
+    waste_prevention_rate = round(((total_items - expired_items) / total_items * 100), 1) if total_items > 0 else 100.0
+
+    # Category Breakdown
+    categories = {}
+    for item in items:
+        cat = item.category if item.category else 'Pantry'
+        categories[cat] = categories.get(cat, 0) + 1
+
+    # AI Smart Insights
+    insights = []
+    if expired_items > 0:
+        insights.append(f"⚠️ You have {expired_items} expired item(s). Consider clearing them to keep your pantry organized.")
+    if expiring_soon > 0:
+        insights.append(f"🔥 {expiring_soon} item(s) are expiring in 3 days! Head to AI Recipes to use them before they go bad.")
+    if waste_prevention_rate >= 80:
+        insights.append("🌟 Excellent job! Your Zero-Waste score is above 80%. You are actively saving money and reducing footprint.")
+    else:
+        insights.append("💡 Tip: Plan meals using 'AI Recipe Generator' to increase your pantry consumption rate.")
+
+    return render_template('analytics.html', 
+                           total_items=total_items,
+                           expired_items=expired_items,
+                           expiring_soon=expiring_soon,
+                           fresh_items=fresh_items,
+                           categories_json=json.dumps(categories),
+                           est_money_saved=est_money_saved,
+                           est_co2_reduced=est_co2_reduced,
+                           waste_prevention_rate=waste_prevention_rate,
+                           insights=insights)
+
 # ================= SHOPPING LIST ROUTES =================
 
 @app.route('/shopping-list')

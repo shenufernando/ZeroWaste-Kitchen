@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="fw-bold mb-4">📊 Pantry Analytics & Impact Dashboard</h2>
+
+    <!-- Summary Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card bg-success text-white p-3 shadow-sm rounded-4">
+                <p class="mb-1">Total Pantry Items</p>
+                <h3 class="fw-bold fs-2 mb-0">{{ total_items }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark p-3 shadow-sm rounded-4">
+                <p class="mb-1">Expiring Soon (≤3 Days)</p>
+                <h3 class="fw-bold fs-2 mb-0">{{ expiring_soon }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white p-3 shadow-sm rounded-4">
+                <p class="mb-1">Expired Items</p>
+                <h3 class="fw-bold fs-2 mb-0">{{ expired_items }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white p-3 shadow-sm rounded-4">
+                <p class="mb-1">Zero-Waste Score</p>
+                <h3 class="fw-bold fs-2 mb-0">{{ waste_prevention_rate }}%</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card p-4 shadow-sm rounded-4 h-100">
+                <h5 class="fw-bold mb-3">🥦 Freshness Overview</h5>
+                <canvas id="freshnessChart"></canvas>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card p-4 shadow-sm rounded-4 h-100">
+                <h5 class="fw-bold mb-3">🏷️ Items by Category</h5>
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Impact Estimates & Insights -->
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card p-4 shadow-sm rounded-4">
+                <h5 class="fw-bold mb-3">🌱 Estimated Environmental & Financial Impact</h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        💵 Estimated Money Saved
+                        <span class="badge bg-success fs-6">LKR {{ est_money_saved }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        🌍 CO₂ Emissions Avoided
+                        <span class="badge bg-primary fs-6">{{ est_co2_reduced }} kg</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card p-4 shadow-sm rounded-4">
+                <h5 class="fw-bold mb-3">🤖 AI Smart Insights</h5>
+                <ul class="list-group list-group-flush">
+                    {% for insight in insights %}
+                        <li class="list-group-item border-0 ps-0">{{ insight }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // Flask/Jinja2 variables safely assigned
+    const freshItems = Number("{{ fresh_items }}") || 0;
+    const expiringSoon = Number("{{ expiring_soon }}") || 0;
+    const expiredItems = Number("{{ expired_items }}") || 0;
+
+    // 1. Freshness Donut Chart
+    const freshnessCtx = document.getElementById('freshnessChart').getContext('2d');
+    new Chart(freshnessCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Fresh Items', 'Expiring Soon (≤3 days)', 'Expired'],
+            datasets: [{
+                data: [freshItems, expiringSoon, expiredItems],
+                backgroundColor: ['#198754', '#ffc107', '#dc3545'],
+                borderWidth: 2,
+                borderColor: '#ffffff'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' }
+            },
+            cutout: '70%'
+        }
+    });
+
+    // 2. Category Bar Chart
+    const rawCategoryData = JSON.parse('{{ categories_json | safe }}');
+    const categoryLabels = Object.keys(rawCategoryData);
+    const categoryValues = Object.values(rawCategoryData);
+
+    const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+    new Chart(categoryCtx, {
+        type: 'bar',
+        data: {
+            labels: categoryLabels.length > 0 ? categoryLabels : ['No Items'],
+            datasets: [{
+                label: 'Item Count',
+                data: categoryValues.length > 0 ? categoryValues : [0],
+                backgroundColor: 'rgba(25, 135, 84, 0.75)',
+                borderColor: '#198754',
+                borderWidth: 1,
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true, ticks: { stepSize: 1 } }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+</script>
+{% endblock %}
