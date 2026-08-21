@@ -47,6 +47,10 @@
         transform: scale(1.2);
         color: #198754 !important;
     }
+
+    .fs-7 {
+        font-size: 0.82rem;
+    }
 </style>
 
 <div class="container py-4">
@@ -128,7 +132,7 @@
             <div id="loadingState" class="text-center py-5 d-none">
                 <div class="spinner-border text-success mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
                 <h5 class="fw-semibold text-dark">Chef AI is cooking up recipes...</h5>
-                <p class="text-muted small">Matching your pantry ingredients to minimize waste.</p>
+                <p class="text-muted small">Matching your pantry ingredients to minimize waste and analyze nutrition.</p>
             </div>
 
             <!-- Empty Initial State -->
@@ -187,7 +191,7 @@ document.getElementById('generateBtn').addEventListener('click', function() {
         const container = document.getElementById('recipesContainer');
         container.innerHTML = '';
 
-        // Match Percentage 
+        // Match Percentage Sorting
         const sortedRecipes = data.recipes.sort((a, b) => {
             const scoreA = parseInt(a.match_score) || 0;
             const scoreB = parseInt(b.match_score) || 0;
@@ -200,7 +204,7 @@ document.getElementById('generateBtn').addEventListener('click', function() {
             
             let usedBadgeHtml = recipe.used_ingredients.map(ing => `<span class="badge bg-success-subtle text-success border border-success me-1 mb-1"><i class="bi bi-check-circle me-1"></i>${ing}</span>`).join('');
             
-            // Setting up the Missing Badge HTML to add one by one
+            // Missing Ingredients Badge HTML
             let missingBadgeHtml = recipe.missing_ingredients.map(ing => {
                 const cleanIng = ing.replace(/'/g, "\\'");
                 return `
@@ -214,17 +218,21 @@ document.getElementById('generateBtn').addEventListener('click', function() {
 
             let stepsHtml = recipe.instructions.map((step, idx) => `<li class="mb-2"><small><strong>Step ${idx + 1}:</strong> ${step}</small></li>`).join('');
 
-            // The button to add all the missing ingredients at once
             const missingItemsJson = JSON.stringify(recipe.missing_ingredients).replace(/'/g, "&apos;");
             let addShoppingBtnHtml = recipe.missing_ingredients.length > 0 ? 
                 `<button onclick='addToShoppingList(${missingItemsJson})' class="btn btn-sm btn-outline-success rounded-pill ms-auto py-0 px-2 small fw-semibold">
                     <i class="bi bi-cart-plus me-1"></i>Add All Missing
                 </button>` : '';
 
-            // Unique Image Generator for Each Card
+            // Health & Nutrition Data Setup
+            const healthMatch = recipe.health_match || 85;
+            const calories = (recipe.nutrition && recipe.nutrition.calories) ? recipe.nutrition.calories : 'N/A';
+            const sugar = (recipe.nutrition && recipe.nutrition.sugar) ? recipe.nutrition.sugar : 'N/A';
+            const cholesterol = (recipe.nutrition && recipe.nutrition.cholesterol) ? recipe.nutrition.cholesterol : 'N/A';
+
+            // Image Generator
             const cleanTitle = encodeURIComponent(recipe.title.replace(/[^a-zA-Z0-9 ]/g, "").trim());
             const randomSeed = Math.floor(Math.random() * 10000) + index;
-            
             const imageUrl = `https://image.pollinations.ai/prompt/delicious%20food%20photo%20of%20${cleanTitle}?width=800&height=400&nologo=true&seed=${randomSeed}`;
             const fallbackUrl = `https://loremflickr.com/800/400/food,dish/all?lock=${index + 10}`;
 
@@ -241,6 +249,40 @@ document.getElementById('generateBtn').addEventListener('click', function() {
                     </div>
                     <div class="text-muted small mb-3">
                         <i class="bi bi-clock me-1"></i> ${recipe.time}
+                    </div>
+
+                    <!-- Health Match & Nutrition Section -->
+                    <div class="p-3 bg-light rounded-3 my-3 border">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-bold small text-dark">
+                                <i class="bi bi-heart-pulse-fill text-danger me-1"></i> Health Score Match
+                            </span>
+                            <span class="fw-bold text-success small">${healthMatch}%</span>
+                        </div>
+                        <div class="progress mb-3" style="height: 8px;">
+                            <div class="progress-bar bg-success rounded-pill" role="progressbar" style="width: ${healthMatch}%;" aria-valuenow="${healthMatch}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+
+                        <div class="row g-2 text-center">
+                            <div class="col-4">
+                                <div class="p-2 bg-white rounded-3 shadow-sm border">
+                                    <div class="text-muted small fs-7">Sugar</div>
+                                    <div class="fw-bold text-warning fs-7">${sugar}</div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-2 bg-white rounded-3 shadow-sm border">
+                                    <div class="text-muted small fs-7">Cholesterol</div>
+                                    <div class="fw-bold text-info fs-7">${cholesterol}</div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-2 bg-white rounded-3 shadow-sm border">
+                                    <div class="text-muted small fs-7">Calories</div>
+                                    <div class="fw-bold text-danger fs-7">${calories}</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="mb-3">

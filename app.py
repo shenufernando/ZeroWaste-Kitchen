@@ -101,8 +101,8 @@ def generate_recipes():
         return jsonify({'error': 'Please select at least one ingredient!'}), 400
 
     prompt = f"""
-    Act as a Zero-Waste Professional Chef. 
-    Generate 2 creative, delicious recipes using these primary ingredients from the user's pantry: {', '.join(selected_ingredients)}.
+    Act as a Zero-Waste Professional Chef and Nutritionist. 
+    Generate 2 creative, delicious, and healthy recipes using these primary ingredients from the user's pantry: {', '.join(selected_ingredients)}.
     
     Filters:
     - Meal Type: {meal_type}
@@ -117,6 +117,12 @@ def generate_recipes():
           "title": "Recipe Name",
           "time": "15 mins",
           "match_score": "95%",
+          "health_match": 92,
+          "nutrition": {{
+            "calories": "320 kcal",
+            "sugar": "4g",
+            "cholesterol": "15mg"
+          }},
           "used_ingredients": ["Ingredient 1 from pantry", "Ingredient 2 from pantry"],
           "missing_ingredients": ["Basic Pantry Staple 1", "Staple 2"],
           "instructions": [
@@ -127,7 +133,7 @@ def generate_recipes():
         }}
       ]
     }}
-    Ensure the recipes prioritize zero-waste and efficient use of the provided ingredients.
+    Ensure the recipes prioritize zero-waste, nutrition accuracy (health_match as an integer score out of 100 based on overall healthiness), and efficient use of the provided ingredients.
     """
 
     try:
