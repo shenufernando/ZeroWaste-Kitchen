@@ -124,6 +124,13 @@
                                         {{ current_user.plan_type }}
                                     </span>
                                 </li>
+                                {% if current_user.is_admin %}
+                                <li>
+                                    <a class="dropdown-item py-2 d-flex align-items-center gap-2 text-warning fw-bold" href="{{ url_for('admin_dashboard') }}">
+                                        <i class="bi bi-shield-lock-fill"></i> Admin Panel
+                                    </a>
+                                </li>
+                                {% endif %}
                                 <li>
                                     <a class="dropdown-item py-2 d-flex align-items-center gap-2" href="{{ url_for('settings') }}">
                                         <i class="bi bi-gear text-secondary"></i> Settings

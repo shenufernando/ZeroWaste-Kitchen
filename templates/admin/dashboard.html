@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+    <h2 class="fw-bold mb-4">👑 Admin Dashboard</h2>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white p-3 rounded-3 shadow-sm">
+                <h5>Total Users</h5>
+                <h2 class="mb-0">{{ total_users }}</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white p-3 rounded-3 shadow-sm">
+                <h5>Pro Users</h5>
+                <h2 class="mb-0">{{ pro_users }}</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark p-3 rounded-3 shadow-sm">
+                <h5>Free Users</h5>
+                <h2 class="mb-0">{{ free_users }}</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white p-3 rounded-3 shadow-sm">
+                <h5>Total Pantry Items</h5>
+                <h2 class="mb-0">{{ total_pantry_items }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm p-4">
+        <h4 class="mb-3">Manage Registered Users</h4>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Plan</th>
+                        <th>Role</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td>{{ user.name }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            <span class="badge {% if user.plan_type == 'Pro' %}bg-success{% else %}bg-secondary{% endif %}">
+                                {{ user.plan_type }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if user.is_admin %}
+                                <span class="badge bg-danger">Admin</span>
+                            {% else %}
+                                <span class="badge bg-light text-dark">User</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <form action="{{ url_for('toggle_user_plan', user_id=user.id) }}" method="POST" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline-primary">Toggle Plan</button>
+                            </form>
+                            {% if not user.is_admin %}
+                            <form action="{{ url_for('delete_user', user_id=user.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete user?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

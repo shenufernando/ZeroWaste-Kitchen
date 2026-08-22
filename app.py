@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import os
 import json
 import io
+from functools import wraps
 from PIL import Image
 from werkzeug.utils import secure_filename
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
@@ -41,6 +42,16 @@ ai_client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+# Admin Access Custom Decorator
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or not getattr(current_user, 'is_admin', False):
+            flash("Access denied! Admin privileges required.", "danger")
+            return redirect(url_for('home'))
+        return f(*args, **kwargs)
+    return decorated_function
+
 # Context Processor for Global Notifications
 @app.context_processor
 def inject_notifications():
@@ -74,8 +85,9 @@ def home():
     expiring_soon_items = [item for item in items if item.expiration_date and 0 <= (item.expiration_date - today).days <= 3]
     expired_items = [item for item in items if item.expiration_date and (item.expiration_date - today).days < 0]
     
-    # Calculate estimated money saved for Dashboard display
-    consumed_saved_count = max(5, len(items) * 2)
+    # Financial impact calculation for dashboard view
+    total_items = len(items)
+    consumed_saved_count = max(5, total_items * 2)
     est_money_saved = round(consumed_saved_count * 350.0, 2)
     
     return render_template('dashboard.html', 
@@ -149,7 +161,7 @@ def generate_recipes():
 
     try:
         response = ai_client.models.generate_content(
-            model='gemini-3.5-flash',
+            model='gemini-2.5-flash',
             contents=prompt,
             config=types.GenerateContentConfig(
                 response_mime_type="application/json"
@@ -216,7 +228,6 @@ def settings():
         new_password = request.form.get('password')
         profile_picture = request.files.get('profile_picture') or request.files.get('profile_pic')
 
-        # Check if email is already taken by another user
         existing_user = User.query.filter(User.email == email, User.id != current_user.id).first()
         if existing_user:
             flash('This email address is already in use by another account.', 'danger')
@@ -225,17 +236,14 @@ def settings():
         current_user.name = name
         current_user.email = email
 
-        # Password update
         if new_password:
             current_user.password = bcrypt.generate_password_hash(new_password).decode('utf-8')
 
-        # Profile Picture upload logic
         if profile_picture and profile_picture.filename != '':
             filename = secure_filename(f"user_{current_user.id}_{profile_picture.filename}")
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             profile_picture.save(filepath)
             
-            # Database model attributes (support both profile_image & profile_pic)
             if hasattr(current_user, 'profile_image'):
                 current_user.profile_image = filename
             if hasattr(current_user, 'profile_pic'):
@@ -333,11 +341,61 @@ def clear_completed_shopping_items():
     flash('Completed items cleared!', 'info')
     return redirect(url_for('shopping_list'))
 
+# ================= ADMIN ROUTES =================
+
+@app.route('/admin')
+@login_required
+@admin_required
+def admin_dashboard():
+    total_users = User.query.count()
+    pro_users = User.query.filter_by(plan_type='Pro').count()
+    free_users = User.query.filter_by(plan_type='Free').count()
+    total_pantry_items = PantryItem.query.count()
+    
+    users = User.query.order_by(User.id.desc()).all()
+    
+    return render_template('admin/dashboard.html', 
+                           total_users=total_users, 
+                           pro_users=pro_users, 
+                           free_users=free_users, 
+                           total_pantry_items=total_pantry_items,
+                           users=users)
+
+@app.route('/admin/toggle-plan/<int:user_id>', methods=['POST'])
+@login_required
+@admin_required
+def toggle_user_plan(user_id):
+    user = User.query.get_or_404(user_id)
+    if user.plan_type == 'Pro':
+        user.plan_type = 'Free'
+        flash(f"{user.name}'s plan downgraded to Free.", "info")
+    else:
+        user.plan_type = 'Pro'
+        flash(f"{user.name}'s plan upgraded to Pro! 👑", "success")
+    db.session.commit()
+    return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/delete-user/<int:user_id>', methods=['POST'])
+@login_required
+@admin_required
+def delete_user(user_id):
+    user = User.query.get_or_404(user_id)
+    if user.id == current_user.id:
+        flash("You cannot delete your own admin account!", "danger")
+        return redirect(url_for('admin_dashboard'))
+    
+    db.session.delete(user)
+    db.session.commit()
+    flash("User account deleted successfully.", "success")
+    return redirect(url_for('admin_dashboard'))
+
 # ================= AUTHENTICATION & PANTRY ROUTES =================
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
+        if getattr(current_user, 'is_admin', False):
+            return redirect(url_for('admin_dashboard'))
         return redirect(url_for('home'))
         
     if request.method == 'POST':
@@ -365,6 +423,8 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
+        if getattr(current_user, 'is_admin', False):
+            return redirect(url_for('admin_dashboard'))
         return redirect(url_for('home'))
 
     if request.method == 'POST':
@@ -375,6 +435,9 @@ def login():
         if user and bcrypt.check_password_hash(user.password, password):
             login_user(user)
             flash(f'Welcome back, {user.name}!', 'success')
+            
+            if getattr(user, 'is_admin', False):
+                return redirect(url_for('admin_dashboard'))
             return redirect(url_for('home'))
         else:
             flash('Login Unsuccessful. Please check email and password', 'danger')
@@ -488,7 +551,7 @@ def scan_pantry_item():
         """
 
         response = ai_client.models.generate_content(
-            model='gemini-3.5-flash',
+            model='gemini-2.5-flash',
             contents=[
                 types.Part.from_bytes(data=clean_image_bytes, mime_type='image/jpeg'),
                 prompt

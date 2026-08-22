@@ -69,3 +69,7 @@ class SavedRecipe(db.Model):
     saved_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     recipe = db.relationship('Recipe')
+
+    @property
+    def is_admin(self):
+        return self.role == 'Admin'
