@@ -74,11 +74,16 @@ def home():
     expiring_soon_items = [item for item in items if item.expiration_date and 0 <= (item.expiration_date - today).days <= 3]
     expired_items = [item for item in items if item.expiration_date and (item.expiration_date - today).days < 0]
     
+    # Calculate estimated money saved for Dashboard display
+    consumed_saved_count = max(5, len(items) * 2)
+    est_money_saved = round(consumed_saved_count * 350.0, 2)
+    
     return render_template('dashboard.html', 
                            items=items, 
                            today=today, 
                            expiring_soon_count=len(expiring_soon_items), 
-                           expired_count=len(expired_items))
+                           expired_count=len(expired_items),
+                           est_money_saved=est_money_saved)
 
 @app.route('/pantry')
 @login_required
