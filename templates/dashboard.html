@@ -154,28 +154,100 @@
             </div>
         </div>
 
-        <!-- Side Panel: Quick AI Recipe Suggestion -->
+        <!-- Side Panel: Quick AI Recipe Suggestion & Featured Recipes -->
         <div class="col-lg-4">
-            <div class="card border-0 shadow-sm rounded-4 bg-dark text-white p-2">
+            <!-- 1. AI Chef Assistant Card -->
+            <div class="card border-0 shadow-sm rounded-4 bg-dark text-white p-2 mb-3">
                 <div class="card-body">
-                    <div class="d-flex align-items-center gap-2 mb-3 text-warning">
+                    <div class="d-flex align-items-center gap-2 mb-2 text-warning">
                         <i class="bi bi-magic fs-4"></i>
                         <h5 class="fw-bold m-0">AI Chef Assistant</h5>
                     </div>
-                    <p class="text-light opacity-75 small">Not sure what to cook? Let our AI suggest recipes based on ingredients that are expiring soon in your pantry.</p>
-                    <hr class="border-secondary">
-                    <div class="bg-secondary bg-opacity-25 rounded-3 p-3 mb-3">
-                        <span class="badge bg-warning text-dark mb-2">Pro Feature</span>
-                        <p class="small m-0 text-light">Generate personalized zero-waste recipes instantly.</p>
-                    </div>
-                    <button class="btn btn-warning w-100 fw-bold rounded-pill shadow-sm">
+                    <p class="text-light opacity-75 small mb-3">Not sure what to cook? Let our AI suggest recipes based on ingredients that are expiring soon in your pantry.</p>
+                    <a href="{{ url_for('recipes') }}" class="btn btn-warning w-100 fw-bold rounded-pill shadow-sm text-dark d-flex align-items-center justify-content-center gap-2">
                         <i class="bi bi-stars"></i> Generate Recipe Now
-                    </button>
+                    </a>
                 </div>
             </div>
-        </div>
+
+            <!-- 2. Admin Featured Recipes Card -->
+           <!-- 2. Admin Featured Recipes Card (Modern & Colorful Version) -->
+<div class="card border-0 shadow-sm rounded-4 bg-white p-3">
+    <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+        <h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+            <i class="bi bi-star-fill text-warning fs-5"></i> 
+            <span>Featured Recipes</span>
+        </h6>
+        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2 py-1 fw-bold fs-7">
+            🌱 ZeroWaste
+        </span>
     </div>
 
+    <div class="d-flex flex-column gap-2">
+        {% if featured_recipes %}
+            {% for recipe in featured_recipes %}
+            <!-- Single Colorful Card -->
+            <div class="p-2.5 rounded-3 border border-light bg-light bg-opacity-50 hover-shadow transition-all d-flex align-items-center justify-content-between gap-2">
+                <div class="d-flex align-items-center gap-3 overflow-hidden">
+                    <div class="rounded-3 d-flex align-items-center justify-content-center text-white shadow-sm flex-shrink-0" 
+                         style="width: 46px; height: 46px; background: linear-gradient(135deg, #11998e, #38ef7d);">
+                        <i class="bi bi-journal-bookmark-fill fs-5"></i>
+                    </div>
+                    <div class="overflow-hidden">
+                        <h6 class="fw-bold text-dark mb-1 text-truncate fs-7">{{ recipe.title }}</h6>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-primary bg-opacity-10 text-primary fs-7 px-2 py-0.5 rounded-pill">Quick</span>
+                            <small class="text-muted fs-7"><i class="bi bi-clock me-1"></i>{{ recipe.cook_time if recipe.cook_time else '15 mins' }}</small>
+                        </div>
+                    </div>
+                </div>
+                <a href="{{ url_for('recipes') }}" class="btn btn-sm btn-success rounded-pill px-3 fw-semibold shadow-sm flex-shrink-0 fs-7">
+                    View
+                </a>
+            </div>
+            {% endfor %}
+        {% else %}
+            <!-- Static Item 1 (Gradient Green) -->
+            <div class="p-2 rounded-3 border border-light-subtle bg-light bg-opacity-50 d-flex align-items-center justify-content-between gap-2">
+                <div class="d-flex align-items-center gap-2.5 overflow-hidden">
+                    <div class="rounded-3 d-flex align-items-center justify-content-center text-white shadow-sm flex-shrink-0" 
+                         style="width: 44px; height: 44px; background: linear-gradient(135deg, #11998e, #38ef7d);">
+                        <i class="bi bi-fire fs-5"></i>
+                    </div>
+                    <div class="overflow-hidden">
+                        <h6 class="fw-bold text-dark mb-0 text-truncate" style="font-size: 0.85rem;">Leftover Rice Fried Rice</h6>
+                        <div class="d-flex align-items-center gap-2 mt-1">
+                            <span class="badge bg-success-subtle text-success fs-7 px-2 py-0 rounded-pill">Easy</span>
+                            <small class="text-muted fs-7"><i class="bi bi-clock me-1"></i>15 mins</small>
+                        </div>
+                    </div>
+                </div>
+                <a href="{{ url_for('recipes') }}" class="btn btn-sm btn-success rounded-pill px-3 fw-bold flex-shrink-0 fs-7">
+                    View
+                </a>
+            </div>
+
+            <!-- Static Item 2 (Gradient Orange/Yellow) -->
+            <div class="p-2 rounded-3 border border-light-subtle bg-light bg-opacity-50 d-flex align-items-center justify-content-between gap-2">
+                <div class="d-flex align-items-center gap-2.5 overflow-hidden">
+                    <div class="rounded-3 d-flex align-items-center justify-content-center text-white shadow-sm flex-shrink-0" 
+                         style="width: 44px; height: 44px; background: linear-gradient(135deg, #ff9966, #ff5e62);">
+                        <i class="bi bi-cup-hot-fill fs-5"></i>
+                    </div>
+                    <div class="overflow-hidden">
+                        <h6 class="fw-bold text-dark mb-0 text-truncate" style="font-size: 0.85rem;">Stale Bread Pudding</h6>
+                        <div class="d-flex align-items-center gap-2 mt-1">
+                            <span class="badge bg-warning-subtle text-warning-emphasis fs-7 px-2 py-0 rounded-pill">Dessert</span>
+                            <small class="text-muted fs-7"><i class="bi bi-clock me-1"></i>20 mins</small>
+                        </div>
+                    </div>
+                </div>
+                <a href="{{ url_for('recipes') }}" class="btn btn-sm btn-success rounded-pill px-3 fw-bold flex-shrink-0 fs-7">
+                    View
+                </a>
+            </div>
+        {% endif %}
+    </div>
 </div>
 
 <!-- ================= ADD ITEM MODAL WITH AI SCANNER ================= -->

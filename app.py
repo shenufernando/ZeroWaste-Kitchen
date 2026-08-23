@@ -341,6 +341,12 @@ def clear_completed_shopping_items():
     flash('Completed items cleared!', 'info')
     return redirect(url_for('shopping_list'))
 
+
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    return render_template('dashboard.html')
+
 # ================= ADMIN ROUTES =================
 
 @app.route('/admin')

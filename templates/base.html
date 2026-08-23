@@ -73,6 +73,14 @@
                                     </a>
                                 </li>
                             {% endif %}
+                            
+                            <!-- Dashboard Link for User (නැවත එකතු කරන ලදි) -->
+                            <li class="nav-item">
+                                <a class="nav-link text-white fw-semibold px-3 d-flex align-items-center gap-2 {% if request.endpoint == 'dashboard' or request.endpoint == 'home' %}active fw-bold{% else %}opacity-75 hover-white{% endif %}" href="{{ url_for('dashboard') }}">
+                                    <i class="bi bi-speedometer2"></i> Dashboard
+                                </a>
+                            </li>
+
                             <li class="nav-item">
                                 <a class="nav-link text-white fw-semibold px-3 d-flex align-items-center gap-2 {% if request.endpoint == 'pantry' %}active fw-bold{% else %}opacity-75 hover-white{% endif %}" href="{{ url_for('pantry') }}">
                                     <i class="bi bi-basket"></i> My Pantry
