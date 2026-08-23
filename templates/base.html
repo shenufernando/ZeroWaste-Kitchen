@@ -53,34 +53,42 @@
                     <ul class="navbar-nav me-auto gap-lg-1 my-2 my-lg-0 align-items-lg-center">
                         
                         {% if current_user.is_admin and request.endpoint == 'admin_dashboard' %}
-                            <!-- Admin View Navbar (When on Admin Dashboard page) -->
+                            <!-- ================= ADMIN NAVBAR ================= -->
                             <li class="nav-item">
-                                <a class="nav-link text-white fw-bold px-3 d-flex align-items-center gap-2 active" href="{{ url_for('admin_dashboard') }}">
-                                    <i class="bi bi-shield-lock-fill"></i> Admin Dashboard
+                                <a class="nav-link text-white fw-bold px-3 d-flex align-items-center gap-2 active" href="#user-management">
+                                    <i class="bi bi-people-fill"></i> User Management
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-white fw-semibold px-3 d-flex align-items-center gap-2 opacity-75 hover-white" href="{{ url_for('home') }}">
-                                    <i class="bi bi-eye"></i> User View
+                                <a class="nav-link text-white-50 px-3 d-flex align-items-center gap-2 hover-white" href="#recipe-manager">
+                                    <i class="bi bi-journal-bookmark-fill"></i> Recipe Manager
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-white-50 px-3 d-flex align-items-center gap-2 hover-white" href="#system-analytics">
+                                    <i class="bi bi-bar-chart-line-fill"></i> System Analytics
+                                </a>
+                            </li>
+                            <li class="nav-item ms-lg-2">
+                                <a class="nav-link text-warning fw-bold px-3 py-1 bg-black bg-opacity-25 rounded-pill d-flex align-items-center gap-2 border border-warning border-opacity-25 hover-white" href="{{ url_for('dashboard') }}">
+                                    <i class="bi bi-box-arrow-up-right"></i> Switch to User View
                                 </a>
                             </li>
                         {% else %}
-                            <!-- Normal User View Navbar (For Users & Admin in normal view) -->
+                            <!-- ================= USER NAVBAR ================= -->
                             {% if current_user.is_admin %}
-                                <li class="nav-item">
-                                    <a class="nav-link text-warning fw-bold px-3 d-flex align-items-center gap-2" href="{{ url_for('admin_dashboard') }}">
-                                        <i class="bi bi-shield-lock"></i> Admin Panel
+                                <li class="nav-item me-lg-2">
+                                    <a class="nav-link text-warning fw-bold px-3 py-1 bg-black bg-opacity-25 rounded-pill d-flex align-items-center gap-2 border border-warning border-opacity-25" href="{{ url_for('admin_dashboard') }}">
+                                        <i class="bi bi-shield-lock-fill"></i> Admin Panel
                                     </a>
                                 </li>
                             {% endif %}
                             
-                            <!-- Dashboard Link for User (නැවත එකතු කරන ලදි) -->
                             <li class="nav-item">
                                 <a class="nav-link text-white fw-semibold px-3 d-flex align-items-center gap-2 {% if request.endpoint == 'dashboard' or request.endpoint == 'home' %}active fw-bold{% else %}opacity-75 hover-white{% endif %}" href="{{ url_for('dashboard') }}">
                                     <i class="bi bi-speedometer2"></i> Dashboard
                                 </a>
                             </li>
-
                             <li class="nav-item">
                                 <a class="nav-link text-white fw-semibold px-3 d-flex align-items-center gap-2 {% if request.endpoint == 'pantry' %}active fw-bold{% else %}opacity-75 hover-white{% endif %}" href="{{ url_for('pantry') }}">
                                     <i class="bi bi-basket"></i> My Pantry
@@ -107,11 +115,11 @@
 
                     <div class="d-flex align-items-center gap-3 ms-auto">
                         <!-- Notification Dropdown -->
-                        <div class="dropdown me-3">
+                        <div class="dropdown me-2">
                             <button class="btn btn-link text-white position-relative p-0" type="button" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-bell fs-4"></i>
+                                <i class="bi bi-bell fs-5"></i>
                                 {% if notifications and notifications|length > 0 %}
-                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem;">
                                         {{ notifications|length }}
                                     </span>
                                 {% endif %}
@@ -173,6 +181,7 @@
                         </div>
                     </div>
                 {% else %}
+                    <!-- Guest Navigation (Logged Out) -->
                     <ul class="navbar-nav mx-auto gap-lg-3 my-2 my-lg-0">
                         <li class="nav-item">
                             <a class="nav-link text-white opacity-90 fw-semibold px-3 hover-white" href="{{ url_for('home') }}">Home</a>
