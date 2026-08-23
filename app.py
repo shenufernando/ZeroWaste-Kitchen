@@ -23,7 +23,7 @@ load_dotenv()
 app = Flask(__name__)
 app.config.from_object(Config)
 
-# Upload Folder Configuration for Profile Pictures
+# Upload Folder Configuration for Profile Pictures & Recipe Images
 UPLOAD_FOLDER = os.path.join(app.root_path, 'static', 'uploads')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -90,10 +90,10 @@ def home():
     consumed_saved_count = max(5, total_items * 2)
     est_money_saved = round(consumed_saved_count * 350.0, 2)
     
-    return render_template('dashboard.html', 
-                           items=items, 
-                           today=today, 
-                           expiring_soon_count=len(expiring_soon_items), 
+    return render_template('dashboard.html',
+                           items=items,
+                           today=today,
+                           expiring_soon_count=len(expiring_soon_items),
                            expired_count=len(expired_items),
                            est_money_saved=est_money_saved)
 
@@ -124,7 +124,7 @@ def generate_recipes():
         return jsonify({'error': 'Please select at least one ingredient!'}), 400
 
     prompt = f"""
-    Act as a Zero-Waste Professional Chef and Nutritionist. 
+    Act as a Zero-Waste Professional Chef and Nutritionist.
     Generate 2 creative, delicious, and healthy recipes using these primary ingredients from the user's pantry: {', '.join(selected_ingredients)}.
     
     Filters:
@@ -206,7 +206,7 @@ def analytics():
     else:
         insights.append("💡 Tip: Plan meals using 'AI Recipe Generator' to increase your pantry consumption rate.")
 
-    return render_template('analytics.html', 
+    return render_template('analytics.html',
                            total_items=total_items,
                            expired_items=expired_items,
                            expiring_soon=expiring_soon,
@@ -341,7 +341,6 @@ def clear_completed_shopping_items():
     flash('Completed items cleared!', 'info')
     return redirect(url_for('shopping_list'))
 
-
 @app.route('/dashboard')
 @login_required
 def dashboard():
@@ -355,40 +354,27 @@ def dashboard():
 @admin_required
 def admin_dashboard():
     total_users = User.query.count()
-    pro_users = User.query.filter_by(plan_type='Pro').count()
-    free_users = User.query.filter_by(plan_type='Free').count()
-    total_pantry_items = PantryItem.query.count()
-    
+    total_items = PantryItem.query.count()
     users = User.query.order_by(User.id.desc()).all()
-    
-    # Render template dynamically checking both path conventions
-    try:
-        return render_template('admin/dashboard.html', 
-                               total_users=total_users, 
-                               pro_users=pro_users, 
-                               free_users=free_users, 
-                               total_pantry_items=total_pantry_items,
-                               users=users)
-    except Exception:
-        return render_template('admin_dashboard.html', 
-                               total_users=total_users, 
-                               pro_users=pro_users, 
-                               free_users=free_users, 
-                               total_pantry_items=total_pantry_items,
-                               users=users)
+    featured_recipes = Recipe.query.all() if 'Recipe' in globals() else []
 
-@app.route('/admin/toggle-plan/<int:user_id>', methods=['POST'])
+    return render_template('admin/dashboard.html',
+                           total_users=total_users,
+                           total_items=total_items,
+                           users=users,
+                           featured_recipes=featured_recipes)
+
+@app.route('/admin/edit-user/<int:user_id>', methods=['POST'])
 @login_required
 @admin_required
-def toggle_user_plan(user_id):
+def edit_user(user_id):
     user = User.query.get_or_404(user_id)
-    if user.plan_type == 'Pro':
-        user.plan_type = 'Free'
-        flash(f"{user.name}'s plan downgraded to Free.", "info")
-    else:
-        user.plan_type = 'Pro'
-        flash(f"{user.name}'s plan upgraded to Pro! 👑", "success")
+    user.name = request.form.get('name')
+    user.email = request.form.get('email')
+    user.is_admin = bool(int(request.form.get('is_admin', 0)))
+    
     db.session.commit()
+    flash('User details updated successfully!', 'success')
     return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/delete-user/<int:user_id>', methods=['POST'])
@@ -403,6 +389,48 @@ def delete_user(user_id):
     db.session.delete(user)
     db.session.commit()
     flash("User account deleted successfully.", "success")
+    return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/add-featured-recipe', methods=['POST'])
+@login_required
+@admin_required
+def add_featured_recipe():
+    title = request.form.get('title')
+    cook_time = request.form.get('cook_time')
+    category = request.form.get('category')
+    description = request.form.get('description')
+    image_file = request.files.get('image')
+
+    filename = None
+    if image_file and image_file.filename != '':
+        filename = secure_filename(f"recipe_{datetime.now().strftime('%Y%m%d%H%M%S')}_{image_file.filename}")
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        image_file.save(filepath)
+
+    if title:
+        new_recipe = Recipe(
+            title=title, 
+            cook_time=cook_time, 
+            category=category,
+            description=description if hasattr(Recipe, 'description') else None,
+            image=filename if hasattr(Recipe, 'image') else None
+        )
+        db.session.add(new_recipe)
+        db.session.commit()
+        flash("Featured recipe published successfully!", "success")
+    else:
+        flash("Please provide a recipe title.", "danger")
+        
+    return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/delete-featured-recipe/<int:recipe_id>', methods=['POST'])
+@login_required
+@admin_required
+def delete_featured_recipe(recipe_id):
+    recipe = Recipe.query.get_or_404(recipe_id)
+    db.session.delete(recipe)
+    db.session.commit()
+    flash("Featured recipe removed.", "info")
     return redirect(url_for('admin_dashboard'))
 
 # ================= AUTHENTICATION & PANTRY ROUTES =================
@@ -553,7 +581,7 @@ def scan_pantry_item():
         clean_image_bytes = img_byte_arr.getvalue()
 
         prompt = """
-        Analyze this food/grocery item image and extract details. 
+        Analyze this food/grocery item image and extract details.
         Return ONLY a JSON object with this exact format:
         {
             "name": "Item Name",
