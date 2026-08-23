@@ -161,7 +161,7 @@ def generate_recipes():
 
     try:
         response = ai_client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-3.5-flash',
             contents=prompt,
             config=types.GenerateContentConfig(
                 response_mime_type="application/json"
@@ -344,6 +344,7 @@ def clear_completed_shopping_items():
 # ================= ADMIN ROUTES =================
 
 @app.route('/admin')
+@app.route('/admin/dashboard')
 @login_required
 @admin_required
 def admin_dashboard():
@@ -354,12 +355,21 @@ def admin_dashboard():
     
     users = User.query.order_by(User.id.desc()).all()
     
-    return render_template('admin/dashboard.html', 
-                           total_users=total_users, 
-                           pro_users=pro_users, 
-                           free_users=free_users, 
-                           total_pantry_items=total_pantry_items,
-                           users=users)
+    # Render template dynamically checking both path conventions
+    try:
+        return render_template('admin/dashboard.html', 
+                               total_users=total_users, 
+                               pro_users=pro_users, 
+                               free_users=free_users, 
+                               total_pantry_items=total_pantry_items,
+                               users=users)
+    except Exception:
+        return render_template('admin_dashboard.html', 
+                               total_users=total_users, 
+                               pro_users=pro_users, 
+                               free_users=free_users, 
+                               total_pantry_items=total_pantry_items,
+                               users=users)
 
 @app.route('/admin/toggle-plan/<int:user_id>', methods=['POST'])
 @login_required
@@ -551,7 +561,7 @@ def scan_pantry_item():
         """
 
         response = ai_client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-3.6-flash',
             contents=[
                 types.Part.from_bytes(data=clean_image_bytes, mime_type='image/jpeg'),
                 prompt

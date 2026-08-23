@@ -51,31 +51,50 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 {% if current_user.is_authenticated %}
                     <ul class="navbar-nav me-auto gap-lg-1 my-2 my-lg-0 align-items-lg-center">
-                        <li class="nav-item">
-                            <a class="nav-link text-white fw-semibold px-3 d-flex align-items-center gap-2 {% if request.endpoint == 'home' %}active fw-bold{% else %}opacity-75 hover-white{% endif %}" href="{{ url_for('home') }}">
-                                <i class="bi bi-speedometer2"></i> Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-white fw-semibold px-3 d-flex align-items-center gap-2 {% if request.endpoint == 'pantry' %}active fw-bold{% else %}opacity-75 hover-white{% endif %}" href="{{ url_for('pantry') }}">
-                                <i class="bi bi-basket"></i> My Pantry
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-white fw-semibold px-3 d-flex align-items-center gap-2 {% if request.endpoint == 'recipes' %}active fw-bold{% else %}opacity-75 hover-white{% endif %}" href="{{ url_for('recipes') }}">
-                                <i class="bi bi-magic"></i> AI Recipes
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-white fw-semibold px-3 d-flex align-items-center gap-2 {% if request.endpoint == 'shopping_list' %}active fw-bold{% else %}opacity-75 hover-white{% endif %}" href="{{ url_for('shopping_list') }}">
-                                <i class="bi bi-cart-check"></i> Shopping List
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-white fw-semibold px-3 d-flex align-items-center gap-2 {% if request.endpoint == 'analytics' %}active fw-bold{% else %}opacity-75 hover-white{% endif %}" href="{{ url_for('analytics') }}">
-                                <i class="bi bi-pie-chart"></i> Analytics
-                            </a>
-                        </li>
+                        
+                        {% if current_user.is_admin and request.endpoint == 'admin_dashboard' %}
+                            <!-- Admin View Navbar (When on Admin Dashboard page) -->
+                            <li class="nav-item">
+                                <a class="nav-link text-white fw-bold px-3 d-flex align-items-center gap-2 active" href="{{ url_for('admin_dashboard') }}">
+                                    <i class="bi bi-shield-lock-fill"></i> Admin Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-white fw-semibold px-3 d-flex align-items-center gap-2 opacity-75 hover-white" href="{{ url_for('home') }}">
+                                    <i class="bi bi-eye"></i> User View
+                                </a>
+                            </li>
+                        {% else %}
+                            <!-- Normal User View Navbar (For Users & Admin in normal view) -->
+                            {% if current_user.is_admin %}
+                                <li class="nav-item">
+                                    <a class="nav-link text-warning fw-bold px-3 d-flex align-items-center gap-2" href="{{ url_for('admin_dashboard') }}">
+                                        <i class="bi bi-shield-lock"></i> Admin Panel
+                                    </a>
+                                </li>
+                            {% endif %}
+                            <li class="nav-item">
+                                <a class="nav-link text-white fw-semibold px-3 d-flex align-items-center gap-2 {% if request.endpoint == 'pantry' %}active fw-bold{% else %}opacity-75 hover-white{% endif %}" href="{{ url_for('pantry') }}">
+                                    <i class="bi bi-basket"></i> My Pantry
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-white fw-semibold px-3 d-flex align-items-center gap-2 {% if request.endpoint == 'recipes' %}active fw-bold{% else %}opacity-75 hover-white{% endif %}" href="{{ url_for('recipes') }}">
+                                    <i class="bi bi-magic"></i> AI Recipes
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-white fw-semibold px-3 d-flex align-items-center gap-2 {% if request.endpoint == 'shopping_list' %}active fw-bold{% else %}opacity-75 hover-white{% endif %}" href="{{ url_for('shopping_list') }}">
+                                    <i class="bi bi-cart-check"></i> Shopping List
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-white fw-semibold px-3 d-flex align-items-center gap-2 {% if request.endpoint == 'analytics' %}active fw-bold{% else %}opacity-75 hover-white{% endif %}" href="{{ url_for('analytics') }}">
+                                    <i class="bi bi-pie-chart"></i> Analytics
+                                </a>
+                            </li>
+                        {% endif %}
+
                     </ul>
 
                     <div class="d-flex align-items-center gap-3 ms-auto">

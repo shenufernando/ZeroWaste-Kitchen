@@ -59,18 +59,21 @@
                             {% if user.is_admin %}
                                 <span class="badge bg-danger">Admin</span>
                             {% else %}
-                                <span class="badge bg-light text-dark">User</span>
+                                <span class="badge bg-light text-dark border">User</span>
                             {% endif %}
                         </td>
+                        <!-- d-flex සහ gap-2 එකතු කර බොත්තම් දෙක වෙන් කරන ලදී -->
                         <td>
-                            <form action="{{ url_for('toggle_user_plan', user_id=user.id) }}" method="POST" class="d-inline">
-                                <button type="submit" class="btn btn-sm btn-outline-primary">Toggle Plan</button>
-                            </form>
-                            {% if not user.is_admin %}
-                            <form action="{{ url_for('delete_user', user_id=user.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete user?');">
-                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
-                            </form>
-                            {% endif %}
+                            <div class="d-flex align-items-center gap-2">
+                                <form action="{{ url_for('toggle_user_plan', user_id=user.id) }}" method="POST" class="m-0">
+                                    <button type="submit" class="btn btn-sm btn-outline-primary">Toggle Plan</button>
+                                </form>
+                                {% if not user.is_admin %}
+                                <form action="{{ url_for('delete_user', user_id=user.id) }}" method="POST" class="m-0" onsubmit="return confirm('Delete user?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                </form>
+                                {% endif %}
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}

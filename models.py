@@ -19,6 +19,11 @@ class User(db.Model, UserMixin):
     saved_recipes = db.relationship('SavedRecipe', backref='user', lazy=True, cascade="all, delete-orphan")
     shopping_items = db.relationship('ShoppingItem', backref='user', lazy=True, cascade="all, delete-orphan")
 
+    @property
+    def is_admin(self):
+        return self.role == 'Admin'
+
+
 class PantryItem(db.Model):
     __tablename__ = 'pantry_items'
     
@@ -32,6 +37,7 @@ class PantryItem(db.Model):
     expiration_date = db.Column(db.Date, nullable=False)
     status = db.Column(db.String(20), default='Fresh')
 
+
 class ShoppingItem(db.Model):
     __tablename__ = 'shopping_items'
     
@@ -41,6 +47,7 @@ class ShoppingItem(db.Model):
     quantity = db.Column(db.String(50), default="1")
     is_bought = db.Column(db.Boolean, default=False)
     added_date = db.Column(db.DateTime, default=datetime.utcnow)
+
 
 class Recipe(db.Model):
     __tablename__ = 'recipes'
@@ -60,6 +67,7 @@ class Recipe(db.Model):
     is_ai_generated = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+
 class SavedRecipe(db.Model):
     __tablename__ = 'saved_recipes'
     
@@ -69,7 +77,3 @@ class SavedRecipe(db.Model):
     saved_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     recipe = db.relationship('Recipe')
-
-    @property
-    def is_admin(self):
-        return self.role == 'Admin'
