@@ -172,6 +172,7 @@
 
             <!-- 2. Admin Featured Recipes Card -->
            <!-- 2. Admin Featured Recipes Card (Modern & Colorful Version) -->
+<!-- 2. Admin Featured Recipes Card (Fixed Flickering & Clean UI) -->
 <div class="card border-0 shadow-sm rounded-4 bg-white p-3">
     <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
         <h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
@@ -186,13 +187,18 @@
     <div class="d-flex flex-column gap-2">
         {% if featured_recipes %}
             {% for recipe in featured_recipes %}
-            <!-- Single Colorful Card -->
+            <!-- Single Dynamic Recipe Item -->
             <div class="p-2.5 rounded-3 border border-light bg-light bg-opacity-50 hover-shadow transition-all d-flex align-items-center justify-content-between gap-2">
                 <div class="d-flex align-items-center gap-3 overflow-hidden">
-                    <div class="rounded-3 d-flex align-items-center justify-content-center text-white shadow-sm flex-shrink-0" 
-                         style="width: 46px; height: 46px; background: linear-gradient(135deg, #11998e, #38ef7d);">
-                        <i class="bi bi-journal-bookmark-fill fs-5"></i>
-                    </div>
+                    {% if recipe.image_file %}
+                        <img src="{{ url_for('static', filename='uploads/' ~ recipe.image_file) }}" alt="{{ recipe.title }}" class="rounded-3 object-fit-cover flex-shrink-0 shadow-sm" style="width: 46px; height: 46px;">
+                    {% else %}
+                        <div class="rounded-3 d-flex align-items-center justify-content-center text-white shadow-sm flex-shrink-0" 
+                             style="width: 46px; height: 46px; background: linear-gradient(135deg, #11998e, #38ef7d);">
+                            <i class="bi bi-journal-bookmark-fill fs-5"></i>
+                        </div>
+                    {% endif %}
+                    
                     <div class="overflow-hidden">
                         <h6 class="fw-bold text-dark mb-1 text-truncate fs-7">{{ recipe.title }}</h6>
                         <div class="d-flex align-items-center gap-2">
@@ -201,54 +207,60 @@
                         </div>
                     </div>
                 </div>
-                <a href="{{ url_for('recipes') }}" class="btn btn-sm btn-success rounded-pill px-3 fw-semibold shadow-sm flex-shrink-0 fs-7">
+                
+                <!-- View Button (Targeting Modal correctly) -->
+                <button type="button" class="btn btn-sm btn-success rounded-pill px-3 fw-semibold shadow-sm flex-shrink-0 fs-7" data-bs-toggle="modal" data-bs-target="#recipeModal{{ recipe.id }}">
                     View
-                </a>
+                </button>
             </div>
             {% endfor %}
         {% else %}
-            <!-- Static Item 1 (Gradient Green) -->
-            <div class="p-2 rounded-3 border border-light-subtle bg-light bg-opacity-50 d-flex align-items-center justify-content-between gap-2">
-                <div class="d-flex align-items-center gap-2.5 overflow-hidden">
-                    <div class="rounded-3 d-flex align-items-center justify-content-center text-white shadow-sm flex-shrink-0" 
-                         style="width: 44px; height: 44px; background: linear-gradient(135deg, #11998e, #38ef7d);">
-                        <i class="bi bi-fire fs-5"></i>
-                    </div>
-                    <div class="overflow-hidden">
-                        <h6 class="fw-bold text-dark mb-0 text-truncate" style="font-size: 0.85rem;">Leftover Rice Fried Rice</h6>
-                        <div class="d-flex align-items-center gap-2 mt-1">
-                            <span class="badge bg-success-subtle text-success fs-7 px-2 py-0 rounded-pill">Easy</span>
-                            <small class="text-muted fs-7"><i class="bi bi-clock me-1"></i>15 mins</small>
-                        </div>
-                    </div>
-                </div>
-                <a href="{{ url_for('recipes') }}" class="btn btn-sm btn-success rounded-pill px-3 fw-bold flex-shrink-0 fs-7">
-                    View
-                </a>
-            </div>
-
-            <!-- Static Item 2 (Gradient Orange/Yellow) -->
-            <div class="p-2 rounded-3 border border-light-subtle bg-light bg-opacity-50 d-flex align-items-center justify-content-between gap-2">
-                <div class="d-flex align-items-center gap-2.5 overflow-hidden">
-                    <div class="rounded-3 d-flex align-items-center justify-content-center text-white shadow-sm flex-shrink-0" 
-                         style="width: 44px; height: 44px; background: linear-gradient(135deg, #ff9966, #ff5e62);">
-                        <i class="bi bi-cup-hot-fill fs-5"></i>
-                    </div>
-                    <div class="overflow-hidden">
-                        <h6 class="fw-bold text-dark mb-0 text-truncate" style="font-size: 0.85rem;">Stale Bread Pudding</h6>
-                        <div class="d-flex align-items-center gap-2 mt-1">
-                            <span class="badge bg-warning-subtle text-warning-emphasis fs-7 px-2 py-0 rounded-pill">Dessert</span>
-                            <small class="text-muted fs-7"><i class="bi bi-clock me-1"></i>20 mins</small>
-                        </div>
-                    </div>
-                </div>
-                <a href="{{ url_for('recipes') }}" class="btn btn-sm btn-success rounded-pill px-3 fw-bold flex-shrink-0 fs-7">
-                    View
-                </a>
+            <!-- Static Empty Placeholder -->
+            <div class="p-3 text-center text-muted rounded-3 border border-dashed">
+                <i class="bi bi-journals fs-3 text-secondary d-block mb-1"></i>
+                <small>No featured recipes available right now.</small>
             </div>
         {% endif %}
     </div>
 </div>
+
+<!-- ALL MODALS PLACED OUTSIDE MAIN CARD CONTAINER TO PREVENT FLICKERING -->
+{% if featured_recipes %}
+    {% for recipe in featured_recipes %}
+    <div class="modal fade" id="recipeModal{{ recipe.id }}" tabindex="-1" aria-labelledby="recipeModalLabel{{ recipe.id }}" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow rounded-4">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold text-dark" id="recipeModalLabel{{ recipe.id }}">{{ recipe.title }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-start p-4">
+                    {% if recipe.image_file %}
+                        <img src="{{ url_for('static', filename='uploads/' ~ recipe.image_file) }}" alt="{{ recipe.title }}" class="img-fluid rounded-3 mb-3 w-100 object-fit-cover shadow-sm" style="max-height: 220px;">
+                    {% endif %}
+                    
+                    {% if recipe.description and 'Image:' not in recipe.description %}
+                        <div class="mb-3">
+                            <span class="badge bg-light text-dark border me-1">{{ recipe.category if recipe.category else 'Main' }}</span>
+                            <span class="badge bg-light text-dark border"><i class="bi bi-clock me-1"></i>{{ recipe.cook_time if recipe.cook_time else '15 mins' }}</span>
+                        </div>
+                        <p class="text-muted small mb-3">{{ recipe.description }}</p>
+                    {% endif %}
+
+                    <h6 class="fw-bold text-success mb-2"><i class="bi bi-list-check me-1"></i> Ingredients</h6>
+                    <div class="small text-secondary bg-light p-3 rounded-3 border mb-3" style="white-space: pre-line;">{{ recipe.ingredients }}</div>
+
+                    <h6 class="fw-bold text-success mb-2"><i class="bi bi-journal-text me-1"></i> Instructions</h6>
+                    <div class="small text-secondary bg-light p-3 rounded-3 border mb-0" style="white-space: pre-line;">{{ recipe.instructions }}</div>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% endif %}
 
 <!-- ================= ADD ITEM MODAL WITH AI SCANNER ================= -->
 <div class="modal fade" id="addItemModal" tabindex="-1" aria-hidden="true">

@@ -33,7 +33,7 @@ bcrypt = Bcrypt(app)
 
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
-login_manager.login_message_category = 'info'
+login_message_category = 'info'
 
 # Gemini AI Client Setup
 ai_client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
@@ -74,7 +74,7 @@ def inject_notifications():
 # ================= ROUTES =================
 
 @app.route('/')
-@app.route('/dashboard')
+@app.route('/dashboard', endpoint='dashboard')
 def home():
     if not current_user.is_authenticated:
         return render_template('index.html')
@@ -84,6 +84,9 @@ def home():
     
     expiring_soon_items = [item for item in items if item.expiration_date and 0 <= (item.expiration_date - today).days <= 3]
     expired_items = [item for item in items if item.expiration_date and (item.expiration_date - today).days < 0]
+    
+    # Featured recipes backend pass කිරීම
+    featured_recipes = Recipe.query.order_by(Recipe.id.desc()).limit(5).all()
     
     # Financial impact calculation for dashboard view
     total_items = len(items)
@@ -95,7 +98,8 @@ def home():
                            today=today,
                            expiring_soon_count=len(expiring_soon_items),
                            expired_count=len(expired_items),
-                           est_money_saved=est_money_saved)
+                           est_money_saved=est_money_saved,
+                           featured_recipes=featured_recipes)
 
 @app.route('/pantry')
 @login_required
@@ -341,11 +345,6 @@ def clear_completed_shopping_items():
     flash('Completed items cleared!', 'info')
     return redirect(url_for('shopping_list'))
 
-@app.route('/dashboard')
-@login_required
-def dashboard():
-    return render_template('dashboard.html')
-
 # ================= ADMIN ROUTES =================
 
 @app.route('/admin')
@@ -396,25 +395,19 @@ def delete_user(user_id):
 @admin_required
 def add_featured_recipe():
     title = request.form.get('title')
-    cook_time = request.form.get('cook_time')
-    category = request.form.get('category')
+    ingredients = request.form.get('ingredients')
+    instructions = request.form.get('instructions') or request.form.get('description')
     description = request.form.get('description')
-    image_file = request.files.get('image')
-
-    filename = None
-    if image_file and image_file.filename != '':
-        filename = secure_filename(f"recipe_{datetime.now().strftime('%Y%m%d%H%M%S')}_{image_file.filename}")
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        image_file.save(filepath)
 
     if title:
         new_recipe = Recipe(
-            title=title, 
-            cook_time=cook_time, 
-            category=category,
-            description=description if hasattr(Recipe, 'description') else None,
-            image=filename if hasattr(Recipe, 'image') else None
+            title=title,
+            description=description if description else "Featured Zero-Waste Recipe",
+            ingredients=ingredients if ingredients else "See detailed instructions",
+            instructions=instructions if instructions else "See details",
+            is_ai_generated=False
         )
+        
         db.session.add(new_recipe)
         db.session.commit()
         flash("Featured recipe published successfully!", "success")
@@ -595,7 +588,7 @@ def scan_pantry_item():
         """
 
         response = ai_client.models.generate_content(
-            model='gemini-3.6-flash',
+            model='gemini-2.5-flash',
             contents=[
                 types.Part.from_bytes(data=clean_image_bytes, mime_type='image/jpeg'),
                 prompt
