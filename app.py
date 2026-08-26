@@ -588,7 +588,7 @@ def scan_pantry_item():
         """
 
         response = ai_client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-3.5-flash',
             contents=[
                 types.Part.from_bytes(data=clean_image_bytes, mime_type='image/jpeg'),
                 prompt
