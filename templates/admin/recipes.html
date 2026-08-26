@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block title %}Recipe Manager - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-success mb-1">
+                <i class="bi bi-journal-bookmark-fill me-2"></i>Recipe Manager
+            </h2>
+            <p class="text-muted mb-0">Manage, edit, and publish featured zero-waste recipes with images.</p>
+        </div>
+        <button class="btn btn-success fw-bold rounded-pill px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#addRecipeModal">
+            <i class="bi bi-plus-circle me-2"></i>Add Featured Recipe
+        </button>
+    </div>
+
+    <!-- Featured Recipes Grid -->
+    {% if featured_recipes and featured_recipes|length > 0 %}
+        <div class="row g-4">
+            {% for recipe in featured_recipes %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden position-relative">
+                        <!-- Recipe Image Check -->
+                        {% set img_name = recipe.image if recipe.image is defined and recipe.image else (recipe.image_url if recipe.image_url is defined and recipe.image_url else None) %}
+                        {% if img_name %}
+                            <img src="{{ url_for('static', filename='uploads/' + img_name) }}" class="card-img-top" alt="{{ recipe.title }}" style="height: 180px; object-fit: cover;">
+                        {% else %}
+                            <div class="bg-light text-center py-4 text-muted" style="height: 180px; align-content: center;">
+                                <i class="bi bi-camera display-4 d-block opacity-50"></i>
+                                <small>No Image Uploaded</small>
+                            </div>
+                        {% endif %}
+
+                        <div class="card-body p-4 d-flex flex-column">
+                            <!-- Meal Type & Prep Time Badges -->
+                            <div class="d-flex gap-2 mb-2">
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill">
+                                    <i class="bi bi-tag me-1"></i>{{ recipe.meal_type or 'Any' }}
+                                </span>
+                                <span class="badge bg-warning-subtle text-dark border border-warning-subtle rounded-pill">
+                                    <i class="bi bi-clock me-1"></i>{{ recipe.cooking_time or '20 mins' }}
+                                </span>
+                            </div>
+
+                            <h5 class="card-title fw-bold text-dark mb-2">{{ recipe.title }}</h5>
+                            <p class="card-text text-muted small mb-3">
+                                {{ recipe.description or 'No description provided.' }}
+                            </p>
+                            
+                            <div class="mb-3">
+                                <strong class="small text-muted d-block mb-1">Ingredients:</strong>
+                                <span class="badge bg-light text-dark border text-wrap text-start fw-normal p-2 w-100">
+                                    {{ recipe.ingredients }}
+                                </span>
+                            </div>
+
+                            <div class="mb-3">
+                                <strong class="small text-muted d-block mb-1">Instructions:</strong>
+                                <p class="small text-secondary mb-0 text-truncate">
+                                    {{ recipe.instructions }}
+                                </p>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center pt-3 border-top mt-auto">
+                                <div class="btn-group gap-2">
+                                    <!-- Edit Button -->
+                                    <button class="btn btn-outline-primary btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#editRecipeModal{{ recipe.id }}">
+                                        <i class="bi bi-pencil me-1"></i>Edit
+                                    </button>
+                                    
+                                    <!-- Delete Button -->
+                                    <form action="{{ url_for('delete_featured_recipe', recipe_id=recipe.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this recipe?');">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                                            <i class="bi bi-trash me-1"></i>Delete
+                                        </button>
+                                    </form>
+                                </div>
+                                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">
+                                    Featured
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Edit Recipe Modal -->
+                <div class="modal fade" id="editRecipeModal{{ recipe.id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content border-0 shadow rounded-4">
+                            <div class="modal-header bg-primary text-white rounded-top-4">
+                                <h5 class="modal-title fw-bold">
+                                    <i class="bi bi-pencil-square me-2"></i>Edit Recipe: {{ recipe.title }}
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <form action="{{ url_for('edit_featured_recipe', recipe_id=recipe.id) }}" method="POST" enctype="multipart/form-data">
+                                <div class="modal-body p-4">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Recipe Title</label>
+                                        <input type="text" class="form-control rounded-3" name="title" value="{{ recipe.title }}" required>
+                                    </div>
+
+                                    <!-- Meal Type & Cooking Time Row -->
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Meal Type</label>
+                                            <select class="form-select rounded-3" name="meal_type">
+                                                <option value="Breakfast" {% if recipe.meal_type == 'Breakfast' %}selected{% endif %}>Breakfast</option>
+                                                <option value="Lunch" {% if recipe.meal_type == 'Lunch' %}selected{% endif %}>Lunch</option>
+                                                <option value="Dinner" {% if recipe.meal_type == 'Dinner' %}selected{% endif %}>Dinner</option>
+                                                <option value="Snack" {% if recipe.meal_type == 'Snack' %}selected{% endif %}>Snack</option>
+                                                <option value="Any" {% if not recipe.meal_type or recipe.meal_type == 'Any' %}selected{% endif %}>Any</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Cooking Time</label>
+                                            <input type="text" class="form-control rounded-3" name="cooking_time" value="{{ recipe.cooking_time or '20 mins' }}" placeholder="e.g., 20 mins">
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Short Description</label>
+                                        <textarea class="form-control rounded-3" name="description" rows="2">{{ recipe.description }}</textarea>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Ingredients</label>
+                                        <textarea class="form-control rounded-3" name="ingredients" rows="3">{{ recipe.ingredients }}</textarea>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Cooking Instructions</label>
+                                        <textarea class="form-control rounded-3" name="instructions" rows="4">{{ recipe.instructions }}</textarea>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Change Image (Optional)</label>
+                                        <input type="file" class="form-control rounded-3" name="image" accept="image/*">
+                                    </div>
+                                </div>
+                                <div class="modal-footer bg-light rounded-bottom-4">
+                                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-primary fw-bold rounded-pill px-4">Save Changes</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card border-0 shadow-sm rounded-4 p-5 text-center my-4">
+            <div class="py-4">
+                <i class="bi bi-journal-x text-muted display-1 mb-3"></i>
+                <h4 class="fw-bold text-dark">No Featured Recipes Available Yet</h4>
+                <p class="text-muted mb-4">Start by adding your first featured recipe with custom images!</p>
+                <button class="btn btn-success fw-bold rounded-pill px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#addRecipeModal">
+                    <i class="bi bi-plus-circle me-2"></i>Add First Recipe
+                </button>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Add Recipe Modal -->
+<div class="modal fade" id="addRecipeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow rounded-4">
+            <div class="modal-header bg-success text-white rounded-top-4">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-plus-circle me-2"></i>Add New Featured Recipe
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('add_featured_recipe') }}" method="POST" enctype="multipart/form-data">
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Recipe Title <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control rounded-3" name="title" placeholder="e.g., Zero-Waste Vegetable Soup" required>
+                    </div>
+
+                    <!-- Meal Type & Cooking Time Row -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Meal Type</label>
+                            <select class="form-select rounded-3" name="meal_type">
+                                <option value="Breakfast">Breakfast</option>
+                                <option value="Lunch">Lunch</option>
+                                <option value="Dinner">Dinner</option>
+                                <option value="Snack">Snack</option>
+                                <option value="Any" selected>Any</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Cooking Time</label>
+                            <input type="text" class="form-control rounded-3" name="cooking_time" placeholder="e.g., 20 mins" value="20 mins">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Short Description</label>
+                        <textarea class="form-control rounded-3" name="description" rows="2" placeholder="Brief summary of the dish..."></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Ingredients</label>
+                        <textarea class="form-control rounded-3" name="ingredients" rows="3" placeholder="e.g., Carrots, Potatoes, Onions"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Cooking Instructions</label>
+                        <textarea class="form-control rounded-3" name="instructions" rows="4" placeholder="Step 1: Chop all vegetables..."></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Recipe Image</label>
+                        <input type="file" class="form-control rounded-3" name="image" accept="image/*">
+                    </div>
+                </div>
+                <div class="modal-footer bg-light rounded-bottom-4">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success fw-bold rounded-pill px-4">Publish Recipe</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -85,10 +85,8 @@ def home():
     expiring_soon_items = [item for item in items if item.expiration_date and 0 <= (item.expiration_date - today).days <= 3]
     expired_items = [item for item in items if item.expiration_date and (item.expiration_date - today).days < 0]
     
-    # Featured recipes backend pass කිරීම
     featured_recipes = Recipe.query.order_by(Recipe.id.desc()).limit(5).all()
     
-    # Financial impact calculation for dashboard view
     total_items = len(items)
     consumed_saved_count = max(5, total_items * 2)
     est_money_saved = round(consumed_saved_count * 350.0, 2)
@@ -363,6 +361,13 @@ def admin_dashboard():
                            users=users,
                            featured_recipes=featured_recipes)
 
+@app.route('/admin/recipes')
+@login_required
+@admin_required
+def admin_recipes():
+    featured_recipes = Recipe.query.all()
+    return render_template('admin/recipes.html', featured_recipes=featured_recipes)
+
 @app.route('/admin/edit-user/<int:user_id>', methods=['POST'])
 @login_required
 @admin_required
@@ -396,8 +401,18 @@ def delete_user(user_id):
 def add_featured_recipe():
     title = request.form.get('title')
     ingredients = request.form.get('ingredients')
-    instructions = request.form.get('instructions') or request.form.get('description')
+    instructions = request.form.get('instructions')
     description = request.form.get('description')
+    meal_type = request.form.get('meal_type', 'Any')
+    cooking_time = request.form.get('cooking_time', '20 mins')
+    image_file = request.files.get('image')
+
+    image_filename = None
+    if image_file and image_file.filename != '':
+        filename = secure_filename(f"recipe_{datetime.now().strftime('%Y%m%d%H%M%S')}_{image_file.filename}")
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        image_file.save(filepath)
+        image_filename = filename
 
     if title:
         new_recipe = Recipe(
@@ -408,13 +423,53 @@ def add_featured_recipe():
             is_ai_generated=False
         )
         
+        if hasattr(new_recipe, 'meal_type'):
+            new_recipe.meal_type = meal_type
+        if hasattr(new_recipe, 'cooking_time'):
+            new_recipe.cooking_time = cooking_time
+            
+        if hasattr(new_recipe, 'image_url'):
+            new_recipe.image_url = image_filename
+        elif hasattr(new_recipe, 'image'):
+            new_recipe.image = image_filename
+            
         db.session.add(new_recipe)
         db.session.commit()
         flash("Featured recipe published successfully!", "success")
     else:
         flash("Please provide a recipe title.", "danger")
         
-    return redirect(url_for('admin_dashboard'))
+    return redirect(url_for('admin_recipes'))
+
+@app.route('/admin/edit-featured-recipe/<int:recipe_id>', methods=['POST'])
+@login_required
+@admin_required
+def edit_featured_recipe(recipe_id):
+    recipe = Recipe.query.get_or_404(recipe_id)
+    recipe.title = request.form.get('title')
+    recipe.description = request.form.get('description')
+    recipe.ingredients = request.form.get('ingredients')
+    recipe.instructions = request.form.get('instructions')
+
+    if hasattr(recipe, 'meal_type'):
+        recipe.meal_type = request.form.get('meal_type', 'Any')
+    if hasattr(recipe, 'cooking_time'):
+        recipe.cooking_time = request.form.get('cooking_time', '20 mins')
+
+    image_file = request.files.get('image')
+    if image_file and image_file.filename != '':
+        filename = secure_filename(f"recipe_{datetime.now().strftime('%Y%m%d%H%M%S')}_{image_file.filename}")
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        image_file.save(filepath)
+        
+        if hasattr(recipe, 'image_url'):
+            recipe.image_url = filename
+        elif hasattr(recipe, 'image'):
+            recipe.image = filename
+
+    db.session.commit()
+    flash("Recipe updated successfully!", "success")
+    return redirect(url_for('admin_recipes'))
 
 @app.route('/admin/delete-featured-recipe/<int:recipe_id>', methods=['POST'])
 @login_required
@@ -424,7 +479,7 @@ def delete_featured_recipe(recipe_id):
     db.session.delete(recipe)
     db.session.commit()
     flash("Featured recipe removed.", "info")
-    return redirect(url_for('admin_dashboard'))
+    return redirect(url_for('admin_recipes'))
 
 # ================= AUTHENTICATION & PANTRY ROUTES =================
 

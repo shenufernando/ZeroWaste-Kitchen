@@ -52,16 +52,17 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 {% if current_user.is_authenticated %}
                     
-                    {% if current_user.is_admin and request.endpoint == 'admin_dashboard' %}
+                    <!-- Admin කෙනෙක් නම් හෝ request.endpoint එක 'admin_' වලින් ආරම්භ වේ නම් Admin Navbar පෙන්වයි -->
+                    {% if current_user.is_admin and (request.endpoint and request.endpoint.startswith('admin_')) %}
                         <!-- ================= ADMIN NAVBAR LINKS ================= -->
                         <ul class="navbar-nav mx-auto gap-lg-3 my-2 my-lg-0 align-items-lg-center">
                             <li class="nav-item">
-                                <a class="nav-link text-white fw-bold px-3 d-flex align-items-center gap-2" href="#user-management">
+                                <a class="nav-link text-white-50 px-3 d-flex align-items-center gap-2 hover-white {% if request.endpoint == 'admin_dashboard' %}active fw-bold text-white{% endif %}" href="{{ url_for('admin_dashboard') }}">
                                     <i class="bi bi-people-fill"></i> User Management
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-white-50 px-3 d-flex align-items-center gap-2 hover-white" href="#recipe-manager">
+                                <a class="nav-link text-white-50 px-3 d-flex align-items-center gap-2 hover-white {% if request.endpoint == 'admin_recipes' %}active fw-bold text-white{% endif %}" href="{{ url_for('admin_recipes') }}">
                                     <i class="bi bi-journal-bookmark-fill"></i> Recipe Manager
                                 </a>
                             </li>
@@ -72,7 +73,7 @@
                             </li>
                         </ul>
                     {% else %}
-                        <!-- ================= USER NAVBAR LINKS (CLEAN & SPACIOUS) ================= -->
+                        <!-- ================= USER NAVBAR LINKS ================= -->
                         <ul class="navbar-nav me-auto gap-lg-2 my-2 my-lg-0 align-items-lg-center">
                             <li class="nav-item">
                                 <a class="nav-link text-white fw-semibold px-3 d-flex align-items-center gap-2 {% if request.endpoint == 'dashboard' or request.endpoint == 'home' %}active fw-bold{% else %}opacity-75 hover-white{% endif %}" href="{{ url_for('dashboard') }}">
@@ -129,7 +130,7 @@
                             </ul>
                         </div>
 
-                        <!-- User Profile Dropdown (Admin Panel Link is placed inside here for Admin users) -->
+                        <!-- User Profile Dropdown -->
                         <div class="dropdown">
                             <a class="nav-link text-white dropdown-toggle fw-semibold d-flex align-items-center gap-2 py-1 px-3 rounded-pill bg-white bg-opacity-10" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 {% if current_user.profile_image %}
