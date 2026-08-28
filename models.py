@@ -58,6 +58,11 @@ class Recipe(db.Model):
     ingredients = db.Column(db.Text, nullable=False)
     instructions = db.Column(db.Text, nullable=False)
     
+    # UI එකට සහ Uploads වලට අවශ්‍ය නව Columns
+    meal_type = db.Column(db.String(50), default='Any')
+    cooking_time = db.Column(db.String(50), default='20 mins')
+    image_url = db.Column(db.String(255), nullable=True)
+    
     # Nutrition Analytics
     calories = db.Column(db.Integer, nullable=True)
     protein_g = db.Column(db.Float, nullable=True)

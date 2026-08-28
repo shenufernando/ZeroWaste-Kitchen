@@ -400,11 +400,11 @@ def delete_user(user_id):
 @admin_required
 def add_featured_recipe():
     title = request.form.get('title')
-    ingredients = request.form.get('ingredients')
-    instructions = request.form.get('instructions')
-    description = request.form.get('description')
     meal_type = request.form.get('meal_type', 'Any')
     cooking_time = request.form.get('cooking_time', '20 mins')
+    description = request.form.get('description')
+    ingredients = request.form.get('ingredients')
+    instructions = request.form.get('instructions')
     image_file = request.files.get('image')
 
     image_filename = None
@@ -417,21 +417,14 @@ def add_featured_recipe():
     if title:
         new_recipe = Recipe(
             title=title,
-            description=description if description else "Featured Zero-Waste Recipe",
+            meal_type=meal_type if meal_type else "Any",
+            cooking_time=cooking_time if cooking_time else "20 mins",
+            description=description,
             ingredients=ingredients if ingredients else "See detailed instructions",
             instructions=instructions if instructions else "See details",
+            image_url=image_filename,
             is_ai_generated=False
         )
-        
-        if hasattr(new_recipe, 'meal_type'):
-            new_recipe.meal_type = meal_type
-        if hasattr(new_recipe, 'cooking_time'):
-            new_recipe.cooking_time = cooking_time
-            
-        if hasattr(new_recipe, 'image_url'):
-            new_recipe.image_url = image_filename
-        elif hasattr(new_recipe, 'image'):
-            new_recipe.image = image_filename
             
         db.session.add(new_recipe)
         db.session.commit()
@@ -447,14 +440,15 @@ def add_featured_recipe():
 def edit_featured_recipe(recipe_id):
     recipe = Recipe.query.get_or_404(recipe_id)
     recipe.title = request.form.get('title')
+    
+    if hasattr(recipe, 'meal_type'):
+        recipe.meal_type = request.form.get('meal_type')
+    if hasattr(recipe, 'cooking_time'):
+        recipe.cooking_time = request.form.get('cooking_time')
+        
     recipe.description = request.form.get('description')
     recipe.ingredients = request.form.get('ingredients')
     recipe.instructions = request.form.get('instructions')
-
-    if hasattr(recipe, 'meal_type'):
-        recipe.meal_type = request.form.get('meal_type', 'Any')
-    if hasattr(recipe, 'cooking_time'):
-        recipe.cooking_time = request.form.get('cooking_time', '20 mins')
 
     image_file = request.files.get('image')
     if image_file and image_file.filename != '':

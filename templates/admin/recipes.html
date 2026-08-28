@@ -35,12 +35,11 @@
                         {% endif %}
 
                         <div class="card-body p-4 d-flex flex-column">
-                            <!-- Meal Type & Prep Time Badges -->
-                            <div class="d-flex gap-2 mb-2">
-                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-success-subtle text-success fw-semibold px-2 py-1">
                                     <i class="bi bi-tag me-1"></i>{{ recipe.meal_type or 'Any' }}
                                 </span>
-                                <span class="badge bg-warning-subtle text-dark border border-warning-subtle rounded-pill">
+                                <span class="small text-muted">
                                     <i class="bi bi-clock me-1"></i>{{ recipe.cooking_time or '20 mins' }}
                                 </span>
                             </div>
@@ -50,6 +49,14 @@
                                 {{ recipe.description or 'No description provided.' }}
                             </p>
                             
+                            <!-- Nutrition Badges -->
+                            <div class="d-flex justify-content-between text-center bg-light p-2 rounded-3 mb-3 small">
+                                <div><strong>{{ recipe.calories or 0 }}</strong><br><span class="text-muted extra-small">kcal</span></div>
+                                <div><strong>{{ recipe.protein_g or 0 }}g</strong><br><span class="text-muted extra-small">Protein</span></div>
+                                <div><strong>{{ recipe.carbs_g or 0 }}g</strong><br><span class="text-muted extra-small">Carbs</span></div>
+                                <div><strong>{{ recipe.fats_g or 0 }}g</strong><br><span class="text-muted extra-small">Fats</span></div>
+                            </div>
+
                             <div class="mb-3">
                                 <strong class="small text-muted d-block mb-1">Ingredients:</strong>
                                 <span class="badge bg-light text-dark border text-wrap text-start fw-normal p-2 w-100">
@@ -98,32 +105,55 @@
                             </div>
                             <form action="{{ url_for('edit_featured_recipe', recipe_id=recipe.id) }}" method="POST" enctype="multipart/form-data">
                                 <div class="modal-body p-4">
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold">Recipe Title</label>
-                                        <input type="text" class="form-control rounded-3" name="title" value="{{ recipe.title }}" required>
-                                    </div>
-
-                                    <!-- Meal Type & Cooking Time Row -->
-                                    <div class="row g-3 mb-3">
-                                        <div class="col-md-6">
+                                    <div class="row">
+                                        <div class="col-md-8 mb-3">
+                                            <label class="form-label fw-semibold">Recipe Title</label>
+                                            <input type="text" class="form-control rounded-3" name="title" value="{{ recipe.title }}" required>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
                                             <label class="form-label fw-semibold">Meal Type</label>
                                             <select class="form-select rounded-3" name="meal_type">
                                                 <option value="Breakfast" {% if recipe.meal_type == 'Breakfast' %}selected{% endif %}>Breakfast</option>
                                                 <option value="Lunch" {% if recipe.meal_type == 'Lunch' %}selected{% endif %}>Lunch</option>
                                                 <option value="Dinner" {% if recipe.meal_type == 'Dinner' %}selected{% endif %}>Dinner</option>
                                                 <option value="Snack" {% if recipe.meal_type == 'Snack' %}selected{% endif %}>Snack</option>
-                                                <option value="Any" {% if not recipe.meal_type or recipe.meal_type == 'Any' %}selected{% endif %}>Any</option>
                                             </select>
                                         </div>
-                                        <div class="col-md-6">
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
                                             <label class="form-label fw-semibold">Cooking Time</label>
-                                            <input type="text" class="form-control rounded-3" name="cooking_time" value="{{ recipe.cooking_time or '20 mins' }}" placeholder="e.g., 20 mins">
+                                            <input type="text" class="form-control rounded-3" name="cooking_time" value="{{ recipe.cooking_time or '20 mins' }}">
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-semibold">Change Image (Optional)</label>
+                                            <input type="file" class="form-control rounded-3" name="image" accept="image/*">
                                         </div>
                                     </div>
 
                                     <div class="mb-3">
                                         <label class="form-label fw-semibold">Short Description</label>
                                         <textarea class="form-control rounded-3" name="description" rows="2">{{ recipe.description }}</textarea>
+                                    </div>
+
+                                    <div class="row bg-light p-3 rounded-3 mb-3 mx-0">
+                                        <div class="col-6 col-md-3 mb-2">
+                                            <label class="form-label small fw-semibold">Calories (kcal)</label>
+                                            <input type="number" class="form-control rounded-3" name="calories" value="{{ recipe.calories or 0 }}">
+                                        </div>
+                                        <div class="col-6 col-md-3 mb-2">
+                                            <label class="form-label small fw-semibold">Protein (g)</label>
+                                            <input type="number" step="0.1" class="form-control rounded-3" name="protein_g" value="{{ recipe.protein_g or 0 }}">
+                                        </div>
+                                        <div class="col-6 col-md-3 mb-2">
+                                            <label class="form-label small fw-semibold">Carbs (g)</label>
+                                            <input type="number" step="0.1" class="form-control rounded-3" name="carbs_g" value="{{ recipe.carbs_g or 0 }}">
+                                        </div>
+                                        <div class="col-6 col-md-3 mb-2">
+                                            <label class="form-label small fw-semibold">Fats (g)</label>
+                                            <input type="number" step="0.1" class="form-control rounded-3" name="fats_g" value="{{ recipe.fats_g or 0 }}">
+                                        </div>
                                     </div>
 
                                     <div class="mb-3">
@@ -134,11 +164,6 @@
                                     <div class="mb-3">
                                         <label class="form-label fw-semibold">Cooking Instructions</label>
                                         <textarea class="form-control rounded-3" name="instructions" rows="4">{{ recipe.instructions }}</textarea>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold">Change Image (Optional)</label>
-                                        <input type="file" class="form-control rounded-3" name="image" accept="image/*">
                                     </div>
                                 </div>
                                 <div class="modal-footer bg-light rounded-bottom-4">
@@ -177,32 +202,55 @@
             </div>
             <form action="{{ url_for('add_featured_recipe') }}" method="POST" enctype="multipart/form-data">
                 <div class="modal-body p-4">
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Recipe Title <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control rounded-3" name="title" placeholder="e.g., Zero-Waste Vegetable Soup" required>
-                    </div>
-
-                    <!-- Meal Type & Cooking Time Row -->
-                    <div class="row g-3 mb-3">
-                        <div class="col-md-6">
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label class="form-label fw-semibold">Recipe Title <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control rounded-3" name="title" placeholder="e.g., Zero-Waste Vegetable Soup" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
                             <label class="form-label fw-semibold">Meal Type</label>
                             <select class="form-select rounded-3" name="meal_type">
                                 <option value="Breakfast">Breakfast</option>
                                 <option value="Lunch">Lunch</option>
                                 <option value="Dinner">Dinner</option>
                                 <option value="Snack">Snack</option>
-                                <option value="Any" selected>Any</option>
                             </select>
                         </div>
-                        <div class="col-md-6">
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
                             <label class="form-label fw-semibold">Cooking Time</label>
-                            <input type="text" class="form-control rounded-3" name="cooking_time" placeholder="e.g., 20 mins" value="20 mins">
+                            <input type="text" class="form-control rounded-3" name="cooking_time" placeholder="e.g., 25 mins">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Recipe Image</label>
+                            <input type="file" class="form-control rounded-3" name="image" accept="image/*">
                         </div>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Short Description</label>
                         <textarea class="form-control rounded-3" name="description" rows="2" placeholder="Brief summary of the dish..."></textarea>
+                    </div>
+
+                    <div class="row bg-light p-3 rounded-3 mb-3 mx-0">
+                        <div class="col-6 col-md-3 mb-2">
+                            <label class="form-label small fw-semibold">Calories (kcal)</label>
+                            <input type="number" class="form-control rounded-3" name="calories" placeholder="e.g., 350">
+                        </div>
+                        <div class="col-6 col-md-3 mb-2">
+                            <label class="form-label small fw-semibold">Protein (g)</label>
+                            <input type="number" step="0.1" class="form-control rounded-3" name="protein_g" placeholder="e.g., 12">
+                        </div>
+                        <div class="col-6 col-md-3 mb-2">
+                            <label class="form-label small fw-semibold">Carbs (g)</label>
+                            <input type="number" step="0.1" class="form-control rounded-3" name="carbs_g" placeholder="e.g., 45">
+                        </div>
+                        <div class="col-6 col-md-3 mb-2">
+                            <label class="form-label small fw-semibold">Fats (g)</label>
+                            <input type="number" step="0.1" class="form-control rounded-3" name="fats_g" placeholder="e.g., 8">
+                        </div>
                     </div>
 
                     <div class="mb-3">
@@ -213,11 +261,6 @@
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Cooking Instructions</label>
                         <textarea class="form-control rounded-3" name="instructions" rows="4" placeholder="Step 1: Chop all vegetables..."></textarea>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Recipe Image</label>
-                        <input type="file" class="form-control rounded-3" name="image" accept="image/*">
                     </div>
                 </div>
                 <div class="modal-footer bg-light rounded-bottom-4">
