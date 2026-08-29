@@ -57,17 +57,17 @@
                         <!-- ================= ADMIN NAVBAR LINKS ================= -->
                         <ul class="navbar-nav mx-auto gap-lg-3 my-2 my-lg-0 align-items-lg-center">
                             <li class="nav-item">
-                                <a class="nav-link text-white-50 px-3 d-flex align-items-center gap-2 hover-white {% if request.endpoint == 'admin_dashboard' %}active fw-bold text-white{% endif %}" href="{{ url_for('admin_dashboard') }}">
+                                <a class="nav-link px-3 d-flex align-items-center gap-2 hover-white {% if request.endpoint in ['admin_dashboard', 'admin_users'] %}active fw-bold text-white{% else %}text-white-50{% endif %}" href="{{ url_for('admin_dashboard') }}">
                                     <i class="bi bi-people-fill"></i> User Management
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-white-50 px-3 d-flex align-items-center gap-2 hover-white {% if request.endpoint == 'admin_recipes' %}active fw-bold text-white{% endif %}" href="{{ url_for('admin_recipes') }}">
-                                    <i class="bi bi-journal-bookmark-fill"></i> Recipe Manager
+                                <a class="nav-link px-3 d-flex align-items-center gap-2 hover-white {% if request.endpoint == 'admin_recipes' %}active fw-bold text-white{% else %}text-white-50{% endif %}" href="{{ url_for('admin_recipes') }}">
+                                    <i class="bi bi-journal-bookmark-fill"></i> Recipe Management
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-white-50 px-3 d-flex align-items-center gap-2 hover-white" href="#system-analytics">
+                                <a class="nav-link px-3 d-flex align-items-center gap-2 hover-white {% if request.endpoint == 'admin_analytics' %}active fw-bold text-white{% else %}text-white-50{% endif %}" href="{{ url_for('admin_analytics') }}">
                                     <i class="bi bi-bar-chart-line-fill"></i> System Analytics
                                 </a>
                             </li>

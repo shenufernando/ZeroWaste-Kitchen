@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}System Analytics - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="mb-4">
+        <h2 class="fw-bold text-success mb-1">
+            <i class="bi bi-graph-up-arrow me-2"></i>System Analytics Dashboard
+        </h2>
+        <p class="text-muted mb-0">Track platform overview, food status breakdown, and recipe metrics.</p>
+    </div>
+
+    <!-- Overview Stat Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-primary text-white">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="mb-1 text-white-50">Total Registered Users</h6>
+                        <h3 class="fw-bold mb-0">{{ total_users }}</h3>
+                    </div>
+                    <i class="bi bi-people display-5 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-success text-white">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="mb-1 text-white-50">Total Pantry Items</h6>
+                        <h3 class="fw-bold mb-0">{{ total_pantry_items }}</h3>
+                    </div>
+                    <i class="bi bi-box-seam display-5 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-warning text-dark">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="mb-1 text-dark-50">Total Recipes</h6>
+                        <h3 class="fw-bold mb-0">{{ total_recipes }}</h3>
+                    </div>
+                    <i class="bi bi-journal-richtext display-5 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-danger text-white">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="mb-1 text-white-50">Expired Pantry Items</h6>
+                        <h3 class="fw-bold mb-0">{{ expired_items }}</h3>
+                    </div>
+                    <i class="bi bi-exclamation-triangle display-5 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="row g-4">
+        <!-- Food Status Breakdown -->
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                <h5 class="fw-bold text-dark mb-3">
+                    <i class="bi bi-pie-chart me-2 text-success"></i>Pantry Health Breakdown
+                </h5>
+                <div style="position: relative; height: 260px;">
+                    <canvas id="pantryChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recipe Origin Breakdown -->
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                <h5 class="fw-bold text-dark mb-3">
+                    <i class="bi bi-bar-chart-line me-2 text-primary"></i>Recipe Sources (Admin vs AI)
+                </h5>
+                <div style="position: relative; height: 260px;">
+                    <canvas id="recipeChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js Integration Script -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // 1. Pantry Status Doughnut Chart
+    const ctx1 = document.getElementById('pantryChart').getContext('2d');
+    new Chart(ctx1, {
+        type: 'doughnut',
+        data: {
+            labels: ['Fresh Items', 'Expiring Soon', 'Expired'],
+            datasets: [{
+                data: [{{ fresh_items }}, {{ expiring_soon }}, {{ expired_items }}],
+                backgroundColor: ['#198754', '#ffc107', '#dc3545'],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+
+    // 2. Recipe Origin Bar Chart
+    const ctx2 = document.getElementById('recipeChart').getContext('2d');
+    new Chart(ctx2, {
+        type: 'bar',
+        data: {
+            labels: ['Admin Featured', 'AI Generated'],
+            datasets: [{
+                label: 'Recipe Count',
+                data: [{{ admin_recipes }}, {{ ai_recipes }}],
+                backgroundColor: ['#198754', '#0d6efd'],
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, ticks: { stepSize: 1 } }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+</script>
+{% endblock %}

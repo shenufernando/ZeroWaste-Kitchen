@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Recipe Manager - Admin Panel{% endblock %}
+{% block title %}Recipe Management - Admin Panel{% endblock %}
 
 {% block content %}
 <div class="container py-4">
@@ -8,7 +8,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="fw-bold text-success mb-1">
-                <i class="bi bi-journal-bookmark-fill me-2"></i>Recipe Manager
+                <i class="bi bi-journal-bookmark-fill me-2"></i>Recipe Management
             </h2>
             <p class="text-muted mb-0">Manage, edit, and publish featured zero-waste recipes with images.</p>
         </div>
@@ -26,10 +26,10 @@
                         <!-- Recipe Image Check -->
                         {% set img_name = recipe.image if recipe.image is defined and recipe.image else (recipe.image_url if recipe.image_url is defined and recipe.image_url else None) %}
                         {% if img_name %}
-                            <img src="{{ url_for('static', filename='uploads/' + img_name) }}" class="card-img-top" alt="{{ recipe.title }}" style="height: 180px; object-fit: cover;">
+                            <img src="{{ url_for('static', filename='uploads/' + img_name) }}" class="card-img-top" alt="{{ recipe.title }}" style="height: 190px; object-fit: cover;">
                         {% else %}
-                            <div class="bg-light text-center py-4 text-muted" style="height: 180px; align-content: center;">
-                                <i class="bi bi-camera display-4 d-block opacity-50"></i>
+                            <div class="bg-light text-center py-4 text-muted d-flex flex-column justify-content-center align-items-center" style="height: 190px;">
+                                <i class="bi bi-camera display-4 opacity-50 mb-2"></i>
                                 <small>No Image Uploaded</small>
                             </div>
                         {% endif %}
@@ -49,45 +49,82 @@
                                 {{ recipe.description or 'No description provided.' }}
                             </p>
                             
-                            <!-- Nutrition Badges -->
-                            <div class="d-flex justify-content-between text-center bg-light p-2 rounded-3 mb-3 small">
-                                <div><strong>{{ recipe.calories or 0 }}</strong><br><span class="text-muted extra-small">kcal</span></div>
-                                <div><strong>{{ recipe.protein_g or 0 }}g</strong><br><span class="text-muted extra-small">Protein</span></div>
-                                <div><strong>{{ recipe.carbs_g or 0 }}g</strong><br><span class="text-muted extra-small">Carbs</span></div>
-                                <div><strong>{{ recipe.fats_g or 0 }}g</strong><br><span class="text-muted extra-small">Fats</span></div>
-                            </div>
-
-                            <div class="mb-3">
-                                <strong class="small text-muted d-block mb-1">Ingredients:</strong>
-                                <span class="badge bg-light text-dark border text-wrap text-start fw-normal p-2 w-100">
-                                    {{ recipe.ingredients }}
-                                </span>
-                            </div>
-
-                            <div class="mb-3">
-                                <strong class="small text-muted d-block mb-1">Instructions:</strong>
-                                <p class="small text-secondary mb-0 text-truncate">
-                                    {{ recipe.instructions }}
-                                </p>
-                            </div>
-
+                            <!-- Action Buttons -->
                             <div class="d-flex justify-content-between align-items-center pt-3 border-top mt-auto">
-                                <div class="btn-group gap-2">
+                                <div class="btn-group gap-1">
+                                    <!-- View Button -->
+                                    <button class="btn btn-sm btn-light border text-secondary rounded-circle" data-bs-toggle="modal" data-bs-target="#viewRecipeModal{{ recipe.id }}" title="View Details" style="width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+
                                     <!-- Edit Button -->
-                                    <button class="btn btn-outline-primary btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#editRecipeModal{{ recipe.id }}">
-                                        <i class="bi bi-pencil me-1"></i>Edit
+                                    <button class="btn btn-sm btn-outline-primary rounded-circle" data-bs-toggle="modal" data-bs-target="#editRecipeModal{{ recipe.id }}" title="Edit Recipe" style="width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;">
+                                        <i class="bi bi-pencil"></i>
                                     </button>
                                     
                                     <!-- Delete Button -->
-                                    <form action="{{ url_for('delete_featured_recipe', recipe_id=recipe.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this recipe?');">
-                                        <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">
-                                            <i class="bi bi-trash me-1"></i>Delete
+                                    <form action="{{ url_for('delete_featured_recipe', recipe_id=recipe.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this recipe?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle" title="Delete Recipe" style="width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;">
+                                            <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
                                 </div>
-                                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">
+
+                                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1">
                                     Featured
                                 </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- View Recipe Modal -->
+                <div class="modal fade" id="viewRecipeModal{{ recipe.id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content border-0 shadow rounded-4">
+                            <div class="modal-header bg-success text-white rounded-top-4">
+                                <h5 class="modal-title fw-bold">
+                                    <i class="bi bi-journal-text me-2"></i>{{ recipe.title }}
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body p-4">
+                                <!-- Image Preview -->
+                                {% if img_name %}
+                                    <div class="mb-4 text-center">
+                                        <img src="{{ url_for('static', filename='uploads/' + img_name) }}" class="img-fluid rounded-4 shadow-sm" alt="{{ recipe.title }}" style="max-height: 280px; width: 100%; object-fit: cover;">
+                                    </div>
+                                {% endif %}
+
+                                <div class="mb-3">
+                                    <strong class="text-muted d-block mb-1">Meal Type & Cooking Time:</strong>
+                                    <span class="badge bg-success-subtle text-success me-2">{{ recipe.meal_type or 'Any' }}</span>
+                                    <span class="text-secondary small"><i class="bi bi-clock me-1"></i>{{ recipe.cooking_time or '20 mins' }}</span>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <strong class="text-muted d-block mb-1">Description:</strong>
+                                    <p class="text-dark mb-0">{{ recipe.description or 'N/A' }}</p>
+                                </div>
+
+                                <!-- Ingredients Block (Pahalata thiyenna style ekath ekka) -->
+                                <div class="mb-3">
+                                    <strong class="text-muted d-block mb-1">Ingredients:</strong>
+                                    <div class="p-3 bg-light rounded-3 text-dark small border" style="white-space: pre-line;">
+                                        {{- recipe.ingredients or 'No ingredients specified.' -}}
+                                    </div>
+                                </div>
+
+                                <!-- Instructions Block (Step 1, Step 2 pahalata penenna style ekath ekka) -->
+                                <div class="mb-3">
+                                    <strong class="text-muted d-block mb-1">Instructions:</strong>
+                                    <div class="p-3 bg-light rounded-3 text-dark small border" style="white-space: pre-line;">
+                                        {{- recipe.instructions or 'No instructions specified.' -}}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer bg-light rounded-bottom-4">
+                                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
                             </div>
                         </div>
                     </div>
@@ -117,6 +154,8 @@
                                                 <option value="Lunch" {% if recipe.meal_type == 'Lunch' %}selected{% endif %}>Lunch</option>
                                                 <option value="Dinner" {% if recipe.meal_type == 'Dinner' %}selected{% endif %}>Dinner</option>
                                                 <option value="Snack" {% if recipe.meal_type == 'Snack' %}selected{% endif %}>Snack</option>
+                                                <option value="Dessert" {% if recipe.meal_type == 'Dessert' %}selected{% endif %}>Dessert</option>
+                                                <option value="Any" {% if recipe.meal_type == 'Any' %}selected{% endif %}>Any</option>
                                             </select>
                                         </div>
                                     </div>
@@ -135,25 +174,6 @@
                                     <div class="mb-3">
                                         <label class="form-label fw-semibold">Short Description</label>
                                         <textarea class="form-control rounded-3" name="description" rows="2">{{ recipe.description }}</textarea>
-                                    </div>
-
-                                    <div class="row bg-light p-3 rounded-3 mb-3 mx-0">
-                                        <div class="col-6 col-md-3 mb-2">
-                                            <label class="form-label small fw-semibold">Calories (kcal)</label>
-                                            <input type="number" class="form-control rounded-3" name="calories" value="{{ recipe.calories or 0 }}">
-                                        </div>
-                                        <div class="col-6 col-md-3 mb-2">
-                                            <label class="form-label small fw-semibold">Protein (g)</label>
-                                            <input type="number" step="0.1" class="form-control rounded-3" name="protein_g" value="{{ recipe.protein_g or 0 }}">
-                                        </div>
-                                        <div class="col-6 col-md-3 mb-2">
-                                            <label class="form-label small fw-semibold">Carbs (g)</label>
-                                            <input type="number" step="0.1" class="form-control rounded-3" name="carbs_g" value="{{ recipe.carbs_g or 0 }}">
-                                        </div>
-                                        <div class="col-6 col-md-3 mb-2">
-                                            <label class="form-label small fw-semibold">Fats (g)</label>
-                                            <input type="number" step="0.1" class="form-control rounded-3" name="fats_g" value="{{ recipe.fats_g or 0 }}">
-                                        </div>
                                     </div>
 
                                     <div class="mb-3">
@@ -214,6 +234,8 @@
                                 <option value="Lunch">Lunch</option>
                                 <option value="Dinner">Dinner</option>
                                 <option value="Snack">Snack</option>
+                                <option value="Dessert">Dessert</option>
+                                <option value="Any">Any</option>
                             </select>
                         </div>
                     </div>
@@ -234,33 +256,14 @@
                         <textarea class="form-control rounded-3" name="description" rows="2" placeholder="Brief summary of the dish..."></textarea>
                     </div>
 
-                    <div class="row bg-light p-3 rounded-3 mb-3 mx-0">
-                        <div class="col-6 col-md-3 mb-2">
-                            <label class="form-label small fw-semibold">Calories (kcal)</label>
-                            <input type="number" class="form-control rounded-3" name="calories" placeholder="e.g., 350">
-                        </div>
-                        <div class="col-6 col-md-3 mb-2">
-                            <label class="form-label small fw-semibold">Protein (g)</label>
-                            <input type="number" step="0.1" class="form-control rounded-3" name="protein_g" placeholder="e.g., 12">
-                        </div>
-                        <div class="col-6 col-md-3 mb-2">
-                            <label class="form-label small fw-semibold">Carbs (g)</label>
-                            <input type="number" step="0.1" class="form-control rounded-3" name="carbs_g" placeholder="e.g., 45">
-                        </div>
-                        <div class="col-6 col-md-3 mb-2">
-                            <label class="form-label small fw-semibold">Fats (g)</label>
-                            <input type="number" step="0.1" class="form-control rounded-3" name="fats_g" placeholder="e.g., 8">
-                        </div>
-                    </div>
-
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Ingredients</label>
-                        <textarea class="form-control rounded-3" name="ingredients" rows="3" placeholder="e.g., Carrots, Potatoes, Onions"></textarea>
+                        <textarea class="form-control rounded-3" name="ingredients" rows="3" placeholder="e.g., Carrots&#10;Potatoes&#10;Onions"></textarea>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Cooking Instructions</label>
-                        <textarea class="form-control rounded-3" name="instructions" rows="4" placeholder="Step 1: Chop all vegetables..."></textarea>
+                        <textarea class="form-control rounded-3" name="instructions" rows="4" placeholder="Step 1: Chop all vegetables...&#10;Step 2: Boil water..."></textarea>
                     </div>
                 </div>
                 <div class="modal-footer bg-light rounded-bottom-4">

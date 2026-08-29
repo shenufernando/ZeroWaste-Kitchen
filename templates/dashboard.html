@@ -171,60 +171,61 @@
             </div>
 
             <!-- 2. Admin Featured Recipes Card -->
-           <!-- 2. Admin Featured Recipes Card (Modern & Colorful Version) -->
-<!-- 2. Admin Featured Recipes Card (Fixed Flickering & Clean UI) -->
-<div class="card border-0 shadow-sm rounded-4 bg-white p-3">
-    <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
-        <h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
-            <i class="bi bi-star-fill text-warning fs-5"></i> 
-            <span>Featured Recipes</span>
-        </h6>
-        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2 py-1 fw-bold fs-7">
-            🌱 ZeroWaste
-        </span>
-    </div>
+            <div class="card border-0 shadow-sm rounded-4 bg-white p-3">
+                <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                    <h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                        <i class="bi bi-star-fill text-warning fs-5"></i> 
+                        <span>Featured Recipes</span>
+                    </h6>
+                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2 py-1 fw-bold fs-7">
+                        🌱 ZeroWaste
+                    </span>
+                </div>
 
-    <div class="d-flex flex-column gap-2">
-        {% if featured_recipes %}
-            {% for recipe in featured_recipes %}
-            <!-- Single Dynamic Recipe Item -->
-            <div class="p-2.5 rounded-3 border border-light bg-light bg-opacity-50 hover-shadow transition-all d-flex align-items-center justify-content-between gap-2">
-                <div class="d-flex align-items-center gap-3 overflow-hidden">
-                    {% if recipe.image_file %}
-                        <img src="{{ url_for('static', filename='uploads/' ~ recipe.image_file) }}" alt="{{ recipe.title }}" class="rounded-3 object-fit-cover flex-shrink-0 shadow-sm" style="width: 46px; height: 46px;">
+                <div class="d-flex flex-column gap-2">
+                    {% if featured_recipes %}
+                        {% for recipe in featured_recipes %}
+                        <!-- Single Dynamic Recipe Item -->
+                        <div class="p-2.5 rounded-3 border border-light bg-light bg-opacity-50 hover-shadow transition-all d-flex align-items-center justify-content-between gap-2">
+                            <div class="d-flex align-items-center gap-3 overflow-hidden">
+                                {% if recipe.image_file %}
+                                    <img src="{{ url_for('static', filename='uploads/' ~ recipe.image_file) }}" alt="{{ recipe.title }}" class="rounded-3 object-fit-cover flex-shrink-0 shadow-sm" style="width: 46px; height: 46px;">
+                                {% else %}
+                                    <div class="rounded-3 d-flex align-items-center justify-content-center text-white shadow-sm flex-shrink-0" 
+                                         style="width: 46px; height: 46px; background: linear-gradient(135deg, #11998e, #38ef7d);">
+                                        <i class="bi bi-journal-bookmark-fill fs-5"></i>
+                                    </div>
+                                {% endif %}
+                                
+                                <div class="overflow-hidden">
+                                    <h6 class="fw-bold text-dark mb-1 text-truncate fs-7">{{ recipe.title }}</h6>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge bg-primary bg-opacity-10 text-primary fs-7 px-2 py-0.5 rounded-pill">Quick</span>
+                                        <small class="text-muted fs-7"><i class="bi bi-clock me-1"></i>{{ recipe.cook_time if recipe.cook_time else '15 mins' }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- View Button -->
+                            <button type="button" class="btn btn-sm btn-success rounded-pill px-3 fw-semibold shadow-sm flex-shrink-0 fs-7" data-bs-toggle="modal" data-bs-target="#recipeModal{{ recipe.id }}">
+                                View
+                            </button>
+                        </div>
+                        {% endfor %}
                     {% else %}
-                        <div class="rounded-3 d-flex align-items-center justify-content-center text-white shadow-sm flex-shrink-0" 
-                             style="width: 46px; height: 46px; background: linear-gradient(135deg, #11998e, #38ef7d);">
-                            <i class="bi bi-journal-bookmark-fill fs-5"></i>
+                        <!-- Static Empty Placeholder -->
+                        <div class="p-3 text-center text-muted rounded-3 border border-dashed">
+                            <i class="bi bi-journals fs-3 text-secondary d-block mb-1"></i>
+                            <small>No featured recipes available right now.</small>
                         </div>
                     {% endif %}
-                    
-                    <div class="overflow-hidden">
-                        <h6 class="fw-bold text-dark mb-1 text-truncate fs-7">{{ recipe.title }}</h6>
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="badge bg-primary bg-opacity-10 text-primary fs-7 px-2 py-0.5 rounded-pill">Quick</span>
-                            <small class="text-muted fs-7"><i class="bi bi-clock me-1"></i>{{ recipe.cook_time if recipe.cook_time else '15 mins' }}</small>
-                        </div>
-                    </div>
                 </div>
-                
-                <!-- View Button (Targeting Modal correctly) -->
-                <button type="button" class="btn btn-sm btn-success rounded-pill px-3 fw-semibold shadow-sm flex-shrink-0 fs-7" data-bs-toggle="modal" data-bs-target="#recipeModal{{ recipe.id }}">
-                    View
-                </button>
             </div>
-            {% endfor %}
-        {% else %}
-            <!-- Static Empty Placeholder -->
-            <div class="p-3 text-center text-muted rounded-3 border border-dashed">
-                <i class="bi bi-journals fs-3 text-secondary d-block mb-1"></i>
-                <small>No featured recipes available right now.</small>
-            </div>
-        {% endif %}
+        </div>
     </div>
 </div>
 
-<!-- ALL MODALS PLACED OUTSIDE MAIN CARD CONTAINER TO PREVENT FLICKERING -->
+<!-- Dynamic Recipe Modals -->
 {% if featured_recipes %}
     {% for recipe in featured_recipes %}
     <div class="modal fade" id="recipeModal{{ recipe.id }}" tabindex="-1" aria-labelledby="recipeModalLabel{{ recipe.id }}" aria-hidden="true">
@@ -262,7 +263,7 @@
     {% endfor %}
 {% endif %}
 
-<!-- ================= ADD ITEM MODAL WITH AI SCANNER ================= -->
+<!-- Add Item Modal -->
 <div class="modal fade" id="addItemModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow rounded-4">
@@ -342,7 +343,7 @@
     </div>
 </div>
 
-<!-- ================= EDIT ITEM MODAL ================= -->
+<!-- Edit Item Modal -->
 <div class="modal fade" id="editItemModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow rounded-4">
@@ -400,10 +401,9 @@
     </div>
 </div>
 
-<!-- Scripts Section -->
+<!-- Client-side Scripts -->
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    // 1. Search Bar Functionality
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
         searchInput.addEventListener('keyup', function () {
@@ -417,7 +417,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-// 2. Open Edit Modal Function
 function openEditModal(id, name, category, quantity, unit, expDate) {
     document.getElementById('editForm').action = '/pantry/edit/' + id;
     document.getElementById('edit_name').value = name;
@@ -430,7 +429,6 @@ function openEditModal(id, name, category, quantity, unit, expDate) {
     editModal.show();
 }
 
-// 3. AI Scan & Auto-Fill Function
 function scanImageWithAI() {
     const fileInput = document.getElementById('ai-image-input');
     const scanBtn = document.getElementById('scan-btn');
@@ -444,7 +442,6 @@ function scanImageWithAI() {
     const formData = new FormData();
     formData.append('image', fileInput.files[0]);
 
-    // Show Loading state
     scanBtn.disabled = true;
     loader.classList.remove('d-none');
 
@@ -462,7 +459,6 @@ function scanImageWithAI() {
             return;
         }
 
-        // Auto Fill Form Fields
         if (data.name) document.getElementById('add_name').value = data.name;
         if (data.category) document.getElementById('add_category').value = data.category;
         if (data.unit) document.getElementById('add_unit').value = data.unit;

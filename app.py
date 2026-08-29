@@ -175,7 +175,7 @@ def generate_recipes():
     except Exception as e:
         return jsonify({'error': f'AI Generation failed: {str(e)}'}), 500
 
-# ================= ADVANCED ANALYTICS ROUTE =================
+# ================= ADVANCED USER ANALYTICS ROUTE =================
 
 @app.route('/analytics')
 @login_required
@@ -360,6 +360,34 @@ def admin_dashboard():
                            total_items=total_items,
                            users=users,
                            featured_recipes=featured_recipes)
+
+@app.route('/admin/analytics')
+@login_required
+@admin_required
+def admin_analytics():
+    total_users = User.query.count()
+    total_pantry_items = PantryItem.query.count()
+    total_recipes = Recipe.query.count()
+
+    today = datetime.now().date()
+    all_pantry_items = PantryItem.query.all()
+
+    fresh_items = sum(1 for item in all_pantry_items if item.expiration_date and (item.expiration_date - today).days > 3)
+    expiring_soon = sum(1 for item in all_pantry_items if item.expiration_date and 0 <= (item.expiration_date - today).days <= 3)
+    expired_items = sum(1 for item in all_pantry_items if item.expiration_date and (item.expiration_date - today).days < 0)
+
+    ai_recipes = Recipe.query.filter_by(is_ai_generated=True).count()
+    admin_recipes = Recipe.query.filter_by(is_ai_generated=False).count()
+
+    return render_template('admin/analytics.html',
+                           total_users=total_users,
+                           total_pantry_items=total_pantry_items,
+                           total_recipes=total_recipes,
+                           fresh_items=fresh_items,
+                           expiring_soon=expiring_soon,
+                           expired_items=expired_items,
+                           ai_recipes=ai_recipes,
+                           admin_recipes=admin_recipes)
 
 @app.route('/admin/recipes')
 @login_required
