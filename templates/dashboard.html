@@ -119,7 +119,14 @@
                                     <tr>
                                         <td class="ps-4 fw-semibold">{{ item.name }}</td>
                                         <td><span class="badge bg-secondary-subtle text-dark">{{ item.category }}</span></td>
-                                        <td>{{ item.quantity }} {{ item.unit }}</td>
+                                        <td>
+                                            {% if item.quantity % 1 == 0 %}
+                                                {{ item.quantity|int }}
+                                            {% else %}
+                                                {{ item.quantity }}
+                                            {% endif %}
+                                            {{ item.unit }}
+                                        </td>
                                         <td>
                                             {% if item.expiration_date %}
                                                 {{ item.expiration_date.strftime('%Y-%m-%d') }}
