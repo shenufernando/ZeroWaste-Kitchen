@@ -1,10 +1,8 @@
 {% extends "base.html" %}
 {% block content %}
 
-<!-- Main Dashboard Container -->
 <div class="container-fluid px-lg-5 py-4 bg-light min-vh-100">
 
-    <!-- Welcome Header & Quick Actions -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
             <h2 class="fw-bold text-dark m-0">Welcome back, {{ current_user.name }}! 👋</h2>
@@ -18,9 +16,7 @@
         </div>
     </div>
 
-    <!-- Analytics Stat Cards Grid -->
     <div class="row g-3 mb-4">
-        <!-- Total Items -->
         <div class="col-12 col-sm-6 col-xl-3">
             <div class="card border-0 shadow-sm rounded-4 h-100 border-start border-4 border-primary">
                 <div class="card-body d-flex align-items-center justify-content-between p-3">
@@ -36,7 +32,6 @@
             </div>
         </div>
 
-        <!-- Expiring Soon -->
         <div class="col-12 col-sm-6 col-xl-3">
             <div class="card border-0 shadow-sm rounded-4 h-100 border-start border-4 border-warning">
                 <div class="card-body d-flex align-items-center justify-content-between p-3">
@@ -52,7 +47,6 @@
             </div>
         </div>
 
-        <!-- Expired Items -->
         <div class="col-12 col-sm-6 col-xl-3">
             <div class="card border-0 shadow-sm rounded-4 h-100 border-start border-4 border-danger">
                 <div class="card-body d-flex align-items-center justify-content-between p-3">
@@ -68,7 +62,6 @@
             </div>
         </div>
 
-        <!-- Saved / Reduced Waste -->
         <div class="col-12 col-sm-6 col-xl-3">
             <div class="card border-0 shadow-sm rounded-4 h-100 border-start border-4 border-success">
                 <div class="card-body d-flex align-items-center justify-content-between p-3">
@@ -85,9 +78,7 @@
         </div>
     </div>
 
-    <!-- Inventory & Quick AI Section Grid -->
     <div class="row g-4">
-        <!-- Main Inventory Table Card -->
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm rounded-4 h-100">
                 <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
@@ -135,7 +126,8 @@
                                             {% endif %}
                                         </td>
                                         <td class="text-end pe-4">
-                                            <button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal('{{ item.id }}', '{{ item.name }}', '{{ item.category }}', '{{ item.quantity }}', '{{ item.unit }}', '{{ item.expiration_date }}')">
+                                            <button class="btn btn-sm btn-outline-primary me-1" 
+                                                    onclick="openEditModal({{ item.id | tojson }}, {{ item.name | tojson }}, {{ item.category | tojson }}, {{ item.quantity | tojson }}, {{ item.unit | tojson }}, {{ (item.expiration_date.strftime('%Y-%m-%d') if item.expiration_date else '') | tojson }})">
                                                 <i class="bi bi-pencil"></i>
                                             </button>
                                             <form action="{{ url_for('delete_pantry_item', item_id=item.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this item?');">
@@ -148,7 +140,6 @@
                             </table>
                         </div>
                     {% else %}
-                        <!-- Empty State UI -->
                         <div class="text-center py-5 my-3">
                             <div class="bg-light d-inline-block p-4 rounded-circle mb-3">
                                 <i class="bi bi-basket3 fs-1 text-muted"></i>
@@ -161,9 +152,7 @@
             </div>
         </div>
 
-        <!-- Side Panel: Quick AI Recipe Suggestion & Featured Recipes -->
         <div class="col-lg-4">
-            <!-- 1. AI Chef Assistant Card -->
             <div class="card border-0 shadow-sm rounded-4 bg-dark text-white p-2 mb-3">
                 <div class="card-body">
                     <div class="d-flex align-items-center gap-2 mb-2 text-warning">
@@ -177,7 +166,6 @@
                 </div>
             </div>
 
-            <!-- 2. Admin Featured Recipes Card -->
             <div class="card border-0 shadow-sm rounded-4 bg-white p-3">
                 <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
                     <h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
@@ -192,35 +180,42 @@
                 <div class="d-flex flex-column gap-2">
                     {% if featured_recipes %}
                         {% for recipe in featured_recipes %}
-                        <!-- Single Dynamic Recipe Item -->
+                        {% set img_path = recipe.image_file or recipe.image or recipe.image_url or recipe.image_path %}
+                        {% set cat_name = recipe.category or recipe.meal_type or recipe.type or 'General' %}
+                        {% set time_val = recipe.cook_time or recipe.prep_time or recipe.cooking_time or recipe.time or '15 mins' %}
+                        
                         <div class="p-2.5 rounded-3 border border-light bg-light bg-opacity-50 hover-shadow transition-all d-flex align-items-center justify-content-between gap-2">
                             <div class="d-flex align-items-center gap-3 overflow-hidden">
-                                {% if recipe.image_file %}
-                                    <img src="{{ url_for('static', filename='uploads/' ~ recipe.image_file) }}" alt="{{ recipe.title }}" class="rounded-3 object-fit-cover flex-shrink-0 shadow-sm" style="width: 46px; height: 46px;">
+                                {% if img_path %}
+                                    {% if img_path.startswith('http') %}
+                                        <img src="{{ img_path }}" alt="{{ recipe.title }}" class="rounded-3 object-fit-cover flex-shrink-0 shadow-sm" style="width: 48px; height: 48px;">
+                                    {% else %}
+                                        <img src="{{ url_for('static', filename='uploads/' ~ img_path) }}" alt="{{ recipe.title }}" class="rounded-3 object-fit-cover flex-shrink-0 shadow-sm" style="width: 48px; height: 48px;">
+                                    {% endif %}
                                 {% else %}
                                     <div class="rounded-3 d-flex align-items-center justify-content-center text-white shadow-sm flex-shrink-0" 
-                                         style="width: 46px; height: 46px; background: linear-gradient(135deg, #11998e, #38ef7d);">
+                                         style="width: 48px; height: 48px; background: linear-gradient(135deg, #11998e, #38ef7d);">
                                         <i class="bi bi-journal-bookmark-fill fs-5"></i>
                                     </div>
                                 {% endif %}
                                 
                                 <div class="overflow-hidden">
-                                    <h6 class="fw-bold text-dark mb-1 text-truncate fs-7">{{ recipe.title }}</h6>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <span class="badge bg-primary bg-opacity-10 text-primary fs-7 px-2 py-0.5 rounded-pill">Quick</span>
-                                        <small class="text-muted fs-7"><i class="bi bi-clock me-1"></i>{{ recipe.cook_time if recipe.cook_time else '15 mins' }}</small>
+                                    <h6 class="fw-bold text-dark mb-1 text-truncate fs-7" title="{{ recipe.title }}">{{ recipe.title }}</h6>
+                                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                                        <span class="badge bg-primary bg-opacity-10 text-primary fs-7 px-2 py-0.5 rounded-pill">
+                                            {{ cat_name }}
+                                        </span>
+                                        <small class="text-muted fs-7"><i class="bi bi-clock me-1"></i>{{ time_val }}</small>
                                     </div>
                                 </div>
                             </div>
                             
-                            <!-- View Button -->
                             <button type="button" class="btn btn-sm btn-success rounded-pill px-3 fw-semibold shadow-sm flex-shrink-0 fs-7" data-bs-toggle="modal" data-bs-target="#recipeModal{{ recipe.id }}">
                                 View
                             </button>
                         </div>
                         {% endfor %}
                     {% else %}
-                        <!-- Static Empty Placeholder -->
                         <div class="p-3 text-center text-muted rounded-3 border border-dashed">
                             <i class="bi bi-journals fs-3 text-secondary d-block mb-1"></i>
                             <small>No featured recipes available right now.</small>
@@ -232,9 +227,12 @@
     </div>
 </div>
 
-<!-- Dynamic Recipe Modals -->
 {% if featured_recipes %}
     {% for recipe in featured_recipes %}
+    {% set img_path = recipe.image_file or recipe.image or recipe.image_url or recipe.image_path %}
+    {% set cat_name = recipe.category or recipe.meal_type or recipe.type or 'General' %}
+    {% set time_val = recipe.cook_time or recipe.prep_time or recipe.cooking_time or recipe.time or '15 mins' %}
+    
     <div class="modal fade" id="recipeModal{{ recipe.id }}" tabindex="-1" aria-labelledby="recipeModalLabel{{ recipe.id }}" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content border-0 shadow rounded-4">
@@ -243,15 +241,25 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body text-start p-4">
-                    {% if recipe.image_file %}
-                        <img src="{{ url_for('static', filename='uploads/' ~ recipe.image_file) }}" alt="{{ recipe.title }}" class="img-fluid rounded-3 mb-3 w-100 object-fit-cover shadow-sm" style="max-height: 220px;">
+                    {% if img_path %}
+                        {% if img_path.startswith('http') %}
+                            <img src="{{ img_path }}" alt="{{ recipe.title }}" class="img-fluid rounded-3 mb-3 w-100 object-fit-cover shadow-sm" style="max-height: 220px;">
+                        {% else %}
+                            <img src="{{ url_for('static', filename='uploads/' ~ img_path) }}" alt="{{ recipe.title }}" class="img-fluid rounded-3 mb-3 w-100 object-fit-cover shadow-sm" style="max-height: 220px;">
+                        {% endif %}
+                    {% else %}
+                        <div class="rounded-3 d-flex align-items-center justify-content-center text-white mb-3 shadow-sm w-100" 
+                             style="height: 180px; background: linear-gradient(135deg, #11998e, #38ef7d);">
+                            <i class="bi bi-journal-bookmark-fill display-4"></i>
+                        </div>
                     {% endif %}
                     
+                    <div class="mb-3">
+                        <span class="badge bg-primary-subtle text-primary border me-1"><i class="bi bi-tag me-1"></i>{{ cat_name }}</span>
+                        <span class="badge bg-light text-dark border"><i class="bi bi-clock me-1"></i>{{ time_val }}</span>
+                    </div>
+
                     {% if recipe.description and 'Image:' not in recipe.description %}
-                        <div class="mb-3">
-                            <span class="badge bg-light text-dark border me-1">{{ recipe.category if recipe.category else 'Main' }}</span>
-                            <span class="badge bg-light text-dark border"><i class="bi bi-clock me-1"></i>{{ recipe.cook_time if recipe.cook_time else '15 mins' }}</span>
-                        </div>
                         <p class="text-muted small mb-3">{{ recipe.description }}</p>
                     {% endif %}
 
@@ -270,7 +278,6 @@
     {% endfor %}
 {% endif %}
 
-<!-- Add Item Modal -->
 <div class="modal fade" id="addItemModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow rounded-4">
@@ -280,7 +287,6 @@
             </div>
             
             <div class="modal-body pt-3">
-                <!-- AI Image Scanner Box -->
                 <div class="card border-dashed bg-light mb-3 text-center p-3 rounded-3" style="border: 2px dashed #cbd5e1;">
                     <label for="ai-image-input" class="form-label fw-semibold text-primary mb-1" style="cursor: pointer;">
                         <i class="bi bi-camera-fill fs-4 d-block mb-1 text-success"></i>
@@ -297,7 +303,6 @@
 
                 <div class="text-center my-2 text-muted small fw-semibold">OR FILL MANUALLY</div>
 
-                <!-- Manual Input Form -->
                 <form action="{{ url_for('add_pantry_item') }}" method="POST">
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Item Name</label>
@@ -350,7 +355,6 @@
     </div>
 </div>
 
-<!-- Edit Item Modal -->
 <div class="modal fade" id="editItemModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow rounded-4">
@@ -408,7 +412,6 @@
     </div>
 </div>
 
-<!-- Client-side Scripts -->
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const searchInput = document.getElementById('searchInput');
@@ -426,11 +429,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
 function openEditModal(id, name, category, quantity, unit, expDate) {
     document.getElementById('editForm').action = '/pantry/edit/' + id;
-    document.getElementById('edit_name').value = name;
-    document.getElementById('edit_category').value = category;
-    document.getElementById('edit_quantity').value = quantity;
-    document.getElementById('edit_unit').value = unit;
-    document.getElementById('edit_expiration_date').value = expDate;
+    document.getElementById('edit_name').value = name || '';
+    document.getElementById('edit_category').value = category || 'Produce';
+    document.getElementById('edit_quantity').value = quantity || 1;
+    document.getElementById('edit_unit').value = unit || 'pcs';
+    document.getElementById('edit_expiration_date').value = expDate || '';
     
     var editModal = new bootstrap.Modal(document.getElementById('editItemModal'));
     editModal.show();
