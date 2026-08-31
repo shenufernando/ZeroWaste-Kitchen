@@ -126,11 +126,11 @@
                                             {% endif %}
                                         </td>
                                         <td class="text-end pe-4">
-                                            <button class="btn btn-sm btn-outline-primary me-1" 
-                                                    onclick="openEditModal({{ item.id | tojson }}, {{ item.name | tojson }}, {{ item.category | tojson }}, {{ item.quantity | tojson }}, {{ item.unit | tojson }}, {{ (item.expiration_date.strftime('%Y-%m-%d') if item.expiration_date else '') | tojson }})">
+                                            <button type="button" class="btn btn-sm btn-outline-primary me-1" 
+                                                    onclick="openEditModal('{{ item.id }}', '{{ item.name | escape }}', '{{ item.category | escape }}', '{{ item.quantity }}', '{{ item.unit | escape }}', '{{ item.expiration_date.strftime('%Y-%m-%d') if item.expiration_date else '' }}')">
                                                 <i class="bi bi-pencil"></i>
                                             </button>
-                                            <form action="{{ url_for('delete_pantry_item', item_id=item.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this item?');">
+                                            <form action="{{ url_for('delete_pantry_item', item_id=item.id, next=request.path) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this item?');">
                                                 <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                                             </form>
                                         </td>
@@ -303,7 +303,7 @@
 
                 <div class="text-center my-2 text-muted small fw-semibold">OR FILL MANUALLY</div>
 
-                <form action="{{ url_for('add_pantry_item') }}" method="POST">
+                <form action="{{ url_for('add_pantry_item', next=request.path) }}" method="POST">
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Item Name</label>
                         <input type="text" id="add_name" name="name" class="form-control" required placeholder="e.g. Fresh Milk">
@@ -428,14 +428,15 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function openEditModal(id, name, category, quantity, unit, expDate) {
-    document.getElementById('editForm').action = '/pantry/edit/' + id;
+    document.getElementById('editForm').action = '/pantry/edit/' + id + '?next=' + encodeURIComponent(window.location.pathname);
     document.getElementById('edit_name').value = name || '';
     document.getElementById('edit_category').value = category || 'Produce';
     document.getElementById('edit_quantity').value = quantity || 1;
     document.getElementById('edit_unit').value = unit || 'pcs';
     document.getElementById('edit_expiration_date').value = expDate || '';
     
-    var editModal = new bootstrap.Modal(document.getElementById('editItemModal'));
+    var editModalElement = document.getElementById('editItemModal');
+    var editModal = bootstrap.Modal.getInstance(editModalElement) || new bootstrap.Modal(editModalElement);
     editModal.show();
 }
 

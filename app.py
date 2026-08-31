@@ -71,6 +71,11 @@ def inject_notifications():
         return dict(notifications=notifications)
     return dict(notifications=[])
 
+# Helper Function for Dynamic Redirects
+def get_next_redirect(default_endpoint='pantry'):
+    next_page = request.args.get('next') or request.referrer or url_for(default_endpoint)
+    return redirect(next_page)
+
 # ================= ROUTES =================
 
 @app.route('/')
@@ -590,7 +595,7 @@ def add_pantry_item():
     else:
         flash('Please fill in all required fields.', 'danger')
 
-    return redirect(url_for('pantry'))
+    return get_next_redirect('pantry')
 
 @app.route('/pantry/consume/<int:item_id>', methods=['POST'])
 @login_required
@@ -601,7 +606,7 @@ def consume_pantry_item(item_id):
         db.session.delete(item)
         db.session.commit()
         flash(f'Great job! "{item_name}" consumed successfully.', 'success')
-    return redirect(url_for('pantry'))
+    return get_next_redirect('pantry')
 
 @app.route('/pantry/delete/<int:item_id>', methods=['POST'])
 @login_required
@@ -611,7 +616,7 @@ def delete_pantry_item(item_id):
         db.session.delete(item)
         db.session.commit()
         flash('Item removed from pantry.', 'info')
-    return redirect(url_for('pantry'))
+    return get_next_redirect('pantry')
 
 @app.route('/pantry/edit/<int:item_id>', methods=['POST'])
 @login_required
@@ -629,7 +634,7 @@ def edit_pantry_item(item_id):
             
         db.session.commit()
         flash('Item updated successfully!', 'success')
-    return redirect(url_for('pantry'))
+    return get_next_redirect('pantry')
 
 @app.route('/pantry/scan', methods=['POST'])
 @login_required
