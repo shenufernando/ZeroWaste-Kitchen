@@ -52,7 +52,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 {% if current_user.is_authenticated %}
                     
-                    <!-- Admin කෙනෙක් නම් හෝ request.endpoint එක 'admin_' වලින් ආරම්භ වේ නම් Admin Navbar පෙන්වයි -->
+                    <!-- Admin කෙනෙක් නම් සහ request.endpoint එක 'admin_' වලින් ආරම්භ වේ නම් Admin Navbar පෙන්වයි -->
                     {% if current_user.is_admin and (request.endpoint and request.endpoint.startswith('admin_')) %}
                         <!-- ================= ADMIN NAVBAR LINKS ================= -->
                         <ul class="navbar-nav mx-auto gap-lg-3 my-2 my-lg-0 align-items-lg-center">

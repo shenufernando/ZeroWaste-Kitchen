@@ -91,7 +91,8 @@ def home():
     expiring_soon_items = [item for item in items if item.expiration_date and 0 <= (item.expiration_date - today).days <= 3]
     expired_items = [item for item in items if item.expiration_date and (item.expiration_date - today).days < 0]
     
-    featured_recipes = Recipe.query.order_by(Recipe.id.desc()).limit(5).all()
+    # Filtered only Admin created featured recipes (is_ai_generated=False)
+    featured_recipes = Recipe.query.filter_by(is_ai_generated=False).order_by(Recipe.id.desc()).limit(5).all()
     
     # User-specific Money Saved calculation
     user_items_count = len(items)
@@ -180,6 +181,22 @@ def generate_recipes():
             )
         )
         recipes_json = json.loads(response.text.strip())
+
+        # Save generated AI recipes automatically to database for System Analytics tracking
+        if 'recipes' in recipes_json and isinstance(recipes_json['recipes'], list):
+            for r in recipes_json['recipes']:
+                ai_recipe_entry = Recipe(
+                    title=r.get('title', 'AI Recipe'),
+                    meal_type=meal_type if meal_type != 'Any' else 'General',
+                    cooking_time=r.get('time', '20 mins'),
+                    description=f"AI Generated Zero-Waste recipe using {', '.join(selected_ingredients)}",
+                    ingredients=", ".join(r.get('used_ingredients', []) + r.get('missing_ingredients', [])),
+                    instructions="\n".join(r.get('instructions', [])),
+                    is_ai_generated=True
+                )
+                db.session.add(ai_recipe_entry)
+            db.session.commit()
+
         return jsonify(recipes_json)
 
     except Exception as e:
@@ -233,6 +250,12 @@ def analytics():
                            est_co2_reduced=est_co2_reduced,
                            waste_prevention_rate=waste_prevention_rate,
                            insights=insights)
+
+
+
+
+
+
 
 # ================= SETTINGS ROUTE =================
 
@@ -368,7 +391,9 @@ def admin_dashboard():
     total_users = User.query.count()
     total_items = PantryItem.query.count()
     users = User.query.order_by(User.id.desc()).all()
-    featured_recipes = Recipe.query.all() if 'Recipe' in globals() else []
+    
+    # Filtered only Admin created featured recipes (is_ai_generated=False)
+    featured_recipes = Recipe.query.filter_by(is_ai_generated=False).order_by(Recipe.id.desc()).all() if 'Recipe' in globals() else []
 
     return render_template('admin/dashboard.html',
                            total_users=total_users,
@@ -408,7 +433,8 @@ def admin_analytics():
 @login_required
 @admin_required
 def admin_recipes():
-    featured_recipes = Recipe.query.all()
+    # Filtered only Admin created featured recipes (is_ai_generated=False)
+    featured_recipes = Recipe.query.filter_by(is_ai_generated=False).order_by(Recipe.id.desc()).all()
     return render_template('admin/recipes.html', featured_recipes=featured_recipes)
 
 @app.route('/admin/edit-user/<int:user_id>', methods=['POST'])

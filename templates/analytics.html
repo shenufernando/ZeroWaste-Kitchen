@@ -2,128 +2,178 @@
 
 {% block content %}
 <div class="container-fluid px-lg-5 py-4 bg-light min-vh-100">
-    <h2 class="fw-bold text-dark mb-4">📊 System Analytics</h2>
+    <!-- Header -->
+    <div class="d-flex align-items-center mb-4">
+        <h2 class="fw-bold text-dark mb-0 fs-3">📊 Pantry Analytics & Impact Dashboard</h2>
+    </div>
 
-    <!-- Stat Cards -->
+    <!-- 4 Main Top Cards (More Compact Height & Sizes) -->
     <div class="row g-3 mb-4">
+        <!-- Card 1: Total Pantry Items -->
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 bg-primary text-white p-3">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <p class="mb-1 opacity-75 fw-semibold">Total Registered Users</p>
-                        <h2 class="fw-bold mb-0">{{ total_users | default(0) }}</h2>
-                    </div>
-                    <i class="bi bi-people fs-1 opacity-50"></i>
+            <div class="card text-white border-0 shadow-sm h-100" style="background-color: #198754; border-radius: 14px;">
+                <div class="card-body px-3 py-2">
+                    <p class="mb-1 text-white-50 fw-semibold style-title" style="font-size: 0.85rem;">Total Pantry Items</p>
+                    <h3 class="fw-bold mb-0 fs-1">{{ total_items | default(0) }}</h3>
                 </div>
             </div>
         </div>
+
+        <!-- Card 2: Expiring Soon -->
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 bg-success text-white p-3">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <p class="mb-1 opacity-75 fw-semibold">Total Pantry Items</p>
-                        <h2 class="fw-bold mb-0">{{ total_items | default(0) }}</h2>
-                    </div>
-                    <i class="bi bi-box-seam fs-1 opacity-50"></i>
+            <div class="card text-dark border-0 shadow-sm h-100" style="background-color: #ffc107; border-radius: 14px;">
+                <div class="card-body px-3 py-2">
+                    <p class="mb-1 text-dark-50 fw-semibold style-title" style="font-size: 0.85rem;">Expiring Soon (≤3 Days)</p>
+                    <h3 class="fw-bold mb-0 fs-1">{{ expiring_soon | default(0) }}</h3>
                 </div>
             </div>
         </div>
+
+        <!-- Card 3: Expired Items -->
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 bg-warning text-dark p-3">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <p class="mb-1 opacity-75 fw-semibold">Total Recipes</p>
-                        <h2 class="fw-bold mb-0">{{ total_recipes | default(0) }}</h2>
-                    </div>
-                    <i class="bi bi-journal-bookmark fs-1 opacity-50"></i>
+            <div class="card text-white border-0 shadow-sm h-100" style="background-color: #dc3545; border-radius: 14px;">
+                <div class="card-body px-3 py-2">
+                    <p class="mb-1 text-white-50 fw-semibold style-title" style="font-size: 0.85rem;">Expired Items</p>
+                    <h3 class="fw-bold mb-0 fs-1">{{ expired_items | default(0) }}</h3>
                 </div>
             </div>
         </div>
+
+        <!-- Card 4: Zero-Waste Score -->
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 bg-danger text-white p-3">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <p class="mb-1 opacity-75 fw-semibold">Expired Pantry Items</p>
-                        <h2 class="fw-bold mb-0">{{ expired_items | default(0) }}</h2>
-                    </div>
-                    <i class="bi bi-exclamation-triangle fs-1 opacity-50"></i>
+            <div class="card text-white border-0 shadow-sm h-100" style="background-color: #0dcaf0; border-radius: 14px;">
+                <div class="card-body px-3 py-2">
+                    <p class="mb-1 text-white-50 fw-semibold style-title" style="font-size: 0.85rem;">Zero-Waste Score</p>
+                    <h3 class="fw-bold mb-0 fs-1">{{ waste_prevention_rate | default(100.0) }}%</h3>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Analytics Charts Section -->
-    <div class="row g-4">
-        <!-- 1. Pantry Health Breakdown -->
+    <!-- Charts Row -->
+    <div class="row g-4 mb-4">
+        <!-- Chart 1: Freshness Overview (Doughnut) -->
         <div class="col-md-6">
-            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
-                <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
-                    <i class="bi bi-pie-chart text-success"></i> Pantry Health Breakdown
-                </h5>
-                <div class="chart-container" style="position: relative; height:300px;">
-                    <canvas id="pantryHealthChart"></canvas>
+            <div class="card border-0 shadow-sm p-3 h-100" style="border-radius: 16px;">
+                <h5 class="fw-bold text-dark mb-4">🥦 Freshness Overview</h5>
+                <div style="position: relative; height: 280px;">
+                    <canvas id="freshnessChart"></canvas>
                 </div>
             </div>
         </div>
 
-        <!-- 2. Recipe Sources (Admin vs AI) -->
+        <!-- Chart 2: Items by Category (Bar Chart) -->
         <div class="col-md-6">
-            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
-                <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
-                    <i class="bi bi-bar-chart-line text-primary"></i> Recipe Sources (Admin vs AI)
-                </h5>
-                <div class="chart-container" style="position: relative; height:300px;">
-                    <canvas id="recipeSourceChart"></canvas>
+            <div class="card border-0 shadow-sm p-3 h-100" style="border-radius: 16px;">
+                <h5 class="fw-bold text-dark mb-4">🏷️ Items by Category</h5>
+                <div style="position: relative; height: 280px;">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Impact & Insights Row -->
+    <div class="row g-4">
+        <!-- Left Card: Estimated Environmental & Financial Impact -->
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm p-4 h-100" style="border-radius: 16px;">
+                <h5 class="fw-bold text-dark mb-3">🌱 Estimated Environmental & Financial Impact</h5>
+                <hr class="mt-0 mb-3 text-muted opacity-25">
+
+                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                    <span class="fs-6 text-dark fw-normal">💵 Estimated Money Saved</span>
+                    <span class="badge px-3 py-2 fs-6 fw-bold" style="background-color: #198754; border-radius: 8px;">
+                        LKR {{ est_money_saved | default(5600.0) }}
+                    </span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center py-2 pt-3">
+                    <span class="fs-6 text-dark fw-normal">🌎 CO₂ Emissions Avoided</span>
+                    <span class="badge bg-primary px-3 py-2 fs-6 fw-bold" style="border-radius: 8px;">
+                        {{ est_co2_reduced | default(19.2) }} kg
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Card: AI Smart Insights -->
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm p-4 h-100" style="border-radius: 16px;">
+                <h5 class="fw-bold text-dark mb-3">🤖 AI Smart Insights</h5>
+                <hr class="mt-0 mb-3 text-muted opacity-25">
+
+                <div class="d-flex flex-column gap-3">
+                    {% if insights %}
+                        {% for insight in insights %}
+                            <div class="fs-6 text-dark">
+                                {{ insight }}
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="fs-6 text-dark">
+                            ⚠️ You have {{ expired_items | default(2) }} expired item(s). Consider clearing them to keep your pantry organized.
+                        </div>
+                        <div class="fs-6 text-dark">
+                            💡 Tip: Plan meals using 'AI Recipe Generator' to increase your pantry consumption rate.
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // Data from Flask Route
-    const freshCount = Number("{{ fresh_items | default(0) }}");
-    const expiringCount = Number("{{ expiring_soon | default(0) }}");
-    const expiredCount = Number("{{ expired_items | default(0) }}");
+    // 1. Freshness Overview Chart
+    const freshCount = Number("{{ fresh_items | default(1) }}");
+    const expiringCount = Number("{{ expiring_soon | default(5) }}");
+    const expiredCount = Number("{{ expired_items | default(7) }}");
 
-    const adminRecipesCount = Number("{{ admin_recipes | default(0) }}");
-    const aiRecipesCount = Number("{{ ai_recipes | default(0) }}");
-
-    // Donut Chart - Pantry Health
-    const healthCtx = document.getElementById('pantryHealthChart').getContext('2d');
-    new Chart(healthCtx, {
+    const ctxFresh = document.getElementById('freshnessChart').getContext('2d');
+    new Chart(ctxFresh, {
         type: 'doughnut',
         data: {
-            labels: ['Fresh Items', 'Expiring Soon', 'Expired'],
+            labels: ['Fresh Items', 'Expiring Soon (≤3 days)', 'Expired'],
             datasets: [{
                 data: [freshCount, expiringCount, expiredCount],
                 backgroundColor: ['#198754', '#ffc107', '#dc3545'],
-                borderWidth: 2
+                borderWidth: 0
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { position: 'bottom' }
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        usePointStyle: true,
+                        boxWidth: 10,
+                        padding: 20,
+                        font: { size: 12 }
+                    }
+                }
             },
-            cutout: '65%'
+            cutout: '55%'
         }
     });
 
-    // Bar Chart - Admin vs AI Recipes
-    const recipeCtx = document.getElementById('recipeSourceChart').getContext('2d');
-    new Chart(recipeCtx, {
+    // 2. Items by Category Chart
+    const categoryData = JSON.parse('{{ categories_json | default("{\"Dairy\":2,\"Bakery\":4,\"Produce\":5,\"Pantry\":2}") | safe }}');
+    const ctxCat = document.getElementById('categoryChart').getContext('2d');
+    new Chart(ctxCat, {
         type: 'bar',
         data: {
-            labels: ['Admin Featured', 'AI Generated'],
+            labels: Object.keys(categoryData),
             datasets: [{
-                label: 'Number of Recipes',
-                data: [adminRecipesCount, aiRecipesCount],
-                backgroundColor: ['#198754', '#0d6efd'],
-                borderRadius: 8,
-                barThickness: 50
+                label: 'Items Count',
+                data: Object.values(categoryData),
+                backgroundColor: '#52a478',
+                borderRadius: 6,
+                barThickness: 60
             }]
         },
         options: {
@@ -132,7 +182,11 @@
             scales: {
                 y: {
                     beginAtZero: true,
-                    ticks: { stepSize: 1 }
+                    ticks: { stepSize: 1 },
+                    grid: { color: '#f0f0f0' }
+                },
+                x: {
+                    grid: { display: false }
                 }
             },
             plugins: {
