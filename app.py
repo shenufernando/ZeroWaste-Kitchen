@@ -84,6 +84,7 @@ def home():
     if not current_user.is_authenticated:
         return render_template('index.html')
     
+    # Filter strictly for the current logged-in user
     items = PantryItem.query.filter_by(user_id=current_user.id).order_by(PantryItem.expiration_date.asc()).all()
     today = datetime.now().date()
     
@@ -92,9 +93,13 @@ def home():
     
     featured_recipes = Recipe.query.order_by(Recipe.id.desc()).limit(5).all()
     
-    total_items = len(items)
-    consumed_saved_count = max(5, total_items * 2)
-    est_money_saved = round(consumed_saved_count * 350.0, 2)
+    # User-specific Money Saved calculation
+    user_items_count = len(items)
+    if user_items_count > 0:
+        consumed_saved_count = user_items_count * 2
+        est_money_saved = round(consumed_saved_count * 350.0, 2)
+    else:
+        est_money_saved = 0.0
     
     return render_template('dashboard.html',
                            items=items,
@@ -193,9 +198,14 @@ def analytics():
     expiring_soon = sum(1 for item in items if item.expiration_date and 0 <= (item.expiration_date - today).days <= 3)
     fresh_items = max(0, total_items - (expired_items + expiring_soon))
     
-    consumed_saved_count = max(5, total_items * 2)
-    est_money_saved = round(consumed_saved_count * 350.0, 2)
-    est_co2_reduced = round(consumed_saved_count * 1.2, 1)
+    if total_items > 0:
+        consumed_saved_count = total_items * 2
+        est_money_saved = round(consumed_saved_count * 350.0, 2)
+        est_co2_reduced = round(consumed_saved_count * 1.2, 1)
+    else:
+        est_money_saved = 0.0
+        est_co2_reduced = 0.0
+
     waste_prevention_rate = round(((total_items - expired_items) / total_items * 100), 1) if total_items > 0 else 100.0
 
     categories = {}
