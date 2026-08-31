@@ -1,137 +1,139 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container py-4">
-    <h2 class="fw-bold mb-4">📊 Pantry Analytics & Impact Dashboard</h2>
+<div class="container-fluid px-lg-5 py-4 bg-light min-vh-100">
+    <h2 class="fw-bold text-dark mb-4">📊 System Analytics</h2>
 
-    <!-- Summary Cards -->
+    <!-- Stat Cards -->
     <div class="row g-3 mb-4">
         <div class="col-md-3">
-            <div class="card bg-success text-white p-3 shadow-sm rounded-4">
-                <p class="mb-1">Total Pantry Items</p>
-                <h3 class="fw-bold fs-2 mb-0">{{ total_items }}</h3>
+            <div class="card border-0 shadow-sm rounded-4 bg-primary text-white p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1 opacity-75 fw-semibold">Total Registered Users</p>
+                        <h2 class="fw-bold mb-0">{{ total_users | default(0) }}</h2>
+                    </div>
+                    <i class="bi bi-people fs-1 opacity-50"></i>
+                </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card bg-warning text-dark p-3 shadow-sm rounded-4">
-                <p class="mb-1">Expiring Soon (≤3 Days)</p>
-                <h3 class="fw-bold fs-2 mb-0">{{ expiring_soon }}</h3>
+            <div class="card border-0 shadow-sm rounded-4 bg-success text-white p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1 opacity-75 fw-semibold">Total Pantry Items</p>
+                        <h2 class="fw-bold mb-0">{{ total_items | default(0) }}</h2>
+                    </div>
+                    <i class="bi bi-box-seam fs-1 opacity-50"></i>
+                </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card bg-danger text-white p-3 shadow-sm rounded-4">
-                <p class="mb-1">Expired Items</p>
-                <h3 class="fw-bold fs-2 mb-0">{{ expired_items }}</h3>
+            <div class="card border-0 shadow-sm rounded-4 bg-warning text-dark p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1 opacity-75 fw-semibold">Total Recipes</p>
+                        <h2 class="fw-bold mb-0">{{ total_recipes | default(0) }}</h2>
+                    </div>
+                    <i class="bi bi-journal-bookmark fs-1 opacity-50"></i>
+                </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card bg-info text-white p-3 shadow-sm rounded-4">
-                <p class="mb-1">Zero-Waste Score</p>
-                <h3 class="fw-bold fs-2 mb-0">{{ waste_prevention_rate }}%</h3>
+            <div class="card border-0 shadow-sm rounded-4 bg-danger text-white p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1 opacity-75 fw-semibold">Expired Pantry Items</p>
+                        <h2 class="fw-bold mb-0">{{ expired_items | default(0) }}</h2>
+                    </div>
+                    <i class="bi bi-exclamation-triangle fs-1 opacity-50"></i>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Charts Section -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-6">
-            <div class="card p-4 shadow-sm rounded-4 h-100">
-                <h5 class="fw-bold mb-3">🥦 Freshness Overview</h5>
-                <canvas id="freshnessChart"></canvas>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card p-4 shadow-sm rounded-4 h-100">
-                <h5 class="fw-bold mb-3">🏷️ Items by Category</h5>
-                <canvas id="categoryChart"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <!-- Impact Estimates & Insights -->
+    <!-- Analytics Charts Section -->
     <div class="row g-4">
+        <!-- 1. Pantry Health Breakdown -->
         <div class="col-md-6">
-            <div class="card p-4 shadow-sm rounded-4">
-                <h5 class="fw-bold mb-3">🌱 Estimated Environmental & Financial Impact</h5>
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        💵 Estimated Money Saved
-                        <span class="badge bg-success fs-6">LKR {{ est_money_saved }}</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        🌍 CO₂ Emissions Avoided
-                        <span class="badge bg-primary fs-6">{{ est_co2_reduced }} kg</span>
-                    </li>
-                </ul>
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+                    <i class="bi bi-pie-chart text-success"></i> Pantry Health Breakdown
+                </h5>
+                <div class="chart-container" style="position: relative; height:300px;">
+                    <canvas id="pantryHealthChart"></canvas>
+                </div>
             </div>
         </div>
+
+        <!-- 2. Recipe Sources (Admin vs AI) -->
         <div class="col-md-6">
-            <div class="card p-4 shadow-sm rounded-4">
-                <h5 class="fw-bold mb-3">🤖 AI Smart Insights</h5>
-                <ul class="list-group list-group-flush">
-                    {% for insight in insights %}
-                        <li class="list-group-item border-0 ps-0">{{ insight }}</li>
-                    {% endfor %}
-                </ul>
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+                    <i class="bi bi-bar-chart-line text-primary"></i> Recipe Sources (Admin vs AI)
+                </h5>
+                <div class="chart-container" style="position: relative; height:300px;">
+                    <canvas id="recipeSourceChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <script>
-    // Flask/Jinja2 variables safely assigned
-    const freshItems = Number("{{ fresh_items }}") || 0;
-    const expiringSoon = Number("{{ expiring_soon }}") || 0;
-    const expiredItems = Number("{{ expired_items }}") || 0;
+    // Data from Flask Route
+    const freshCount = Number("{{ fresh_items | default(0) }}");
+    const expiringCount = Number("{{ expiring_soon | default(0) }}");
+    const expiredCount = Number("{{ expired_items | default(0) }}");
 
-    // 1. Freshness Donut Chart
-    const freshnessCtx = document.getElementById('freshnessChart').getContext('2d');
-    new Chart(freshnessCtx, {
+    const adminRecipesCount = Number("{{ admin_recipes | default(0) }}");
+    const aiRecipesCount = Number("{{ ai_recipes | default(0) }}");
+
+    // Donut Chart - Pantry Health
+    const healthCtx = document.getElementById('pantryHealthChart').getContext('2d');
+    new Chart(healthCtx, {
         type: 'doughnut',
         data: {
-            labels: ['Fresh Items', 'Expiring Soon (≤3 days)', 'Expired'],
+            labels: ['Fresh Items', 'Expiring Soon', 'Expired'],
             datasets: [{
-                data: [freshItems, expiringSoon, expiredItems],
+                data: [freshCount, expiringCount, expiredCount],
                 backgroundColor: ['#198754', '#ffc107', '#dc3545'],
-                borderWidth: 2,
-                borderColor: '#ffffff'
+                borderWidth: 2
             }]
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
                 legend: { position: 'bottom' }
             },
-            cutout: '70%'
+            cutout: '65%'
         }
     });
 
-    // 2. Category Bar Chart
-    const rawCategoryData = JSON.parse('{{ categories_json | safe }}');
-    const categoryLabels = Object.keys(rawCategoryData);
-    const categoryValues = Object.values(rawCategoryData);
-
-    const categoryCtx = document.getElementById('categoryChart').getContext('2d');
-    new Chart(categoryCtx, {
+    // Bar Chart - Admin vs AI Recipes
+    const recipeCtx = document.getElementById('recipeSourceChart').getContext('2d');
+    new Chart(recipeCtx, {
         type: 'bar',
         data: {
-            labels: categoryLabels.length > 0 ? categoryLabels : ['No Items'],
+            labels: ['Admin Featured', 'AI Generated'],
             datasets: [{
-                label: 'Item Count',
-                data: categoryValues.length > 0 ? categoryValues : [0],
-                backgroundColor: 'rgba(25, 135, 84, 0.75)',
-                borderColor: '#198754',
-                borderWidth: 1,
-                borderRadius: 8
+                label: 'Number of Recipes',
+                data: [adminRecipesCount, aiRecipesCount],
+                backgroundColor: ['#198754', '#0d6efd'],
+                borderRadius: 8,
+                barThickness: 50
             }]
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             scales: {
-                y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1 }
+                }
             },
             plugins: {
                 legend: { display: false }

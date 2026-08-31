@@ -13,6 +13,7 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(20), default='User')
     plan_type = db.Column(db.String(20), default='Free')
+    profile_image = db.Column(db.String(255), default='default_user.png')  # Profile Picture එක සේව් වීමට එක් කළ අලුත් Column එක
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     pantry_items = db.relationship('PantryItem', backref='owner', lazy=True, cascade="all, delete-orphan")
@@ -58,7 +59,7 @@ class Recipe(db.Model):
     ingredients = db.Column(db.Text, nullable=False)
     instructions = db.Column(db.Text, nullable=False)
     
-    # UI එකට සහ Uploads වලට අවශ්‍ය නව Columns
+    # UI එකට සහ Uploads වලට අවශ්‍ය Columns
     meal_type = db.Column(db.String(50), default='Any')
     cooking_time = db.Column(db.String(50), default='20 mins')
     image_url = db.Column(db.String(255), nullable=True)
